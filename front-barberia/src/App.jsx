@@ -93,7 +93,7 @@ export default function App() {
     <div style={{ padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <div>
-          <h2 style={{ color: '#ffffff', margin: 0 }}>¡Hola, Juan!</h2>
+          <h2 style={{ color: '#ffffff', margin: 0 }}>¡Hola!</h2>
           <p style={{ color: '#94a3b8', margin: '5px 0 0 0' }}>¿Qué te harás hoy?</p>
         </div>
         <User size={32} color="#d4af37" />
