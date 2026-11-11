@@ -33,7 +33,7 @@ app.post('/api/login', async (req, res) => {
       const usuario = result.rows[0];
       res.status(200).json({ 
         message: "Login exitoso", 
-        usuario: { nombre: usuario.nombre, rol: usuario.rol } 
+        usuario: { nombre: usuario.nombre, rol: usuario.rol_id } 
       });
     } else {
       res.status(401).json({ message: "Correo o contraseña incorrectos" });
@@ -44,17 +44,17 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// 2. RUTA PARA REGISTRAR NUEVOS USUARIOS
+// 2. RUTA PARA REGISTRAR NUEVOS USUARIOS (Ajustada a la tabla 'usuarios' con 'rol_id')
 app.post('/api/usuarios', async (req, res) => {
-  const { nombre, email, password, rol } = req.body;
+  const { nombre, email, password, rol_id } = req.body;
 
   try {
     const query = `
-      INSERT INTO usuarios (nombre, email, password, rol) 
+      INSERT INTO usuarios (nombre, email, password, rol_id) 
       VALUES ($1, $2, $3, $4) 
       RETURNING *;
     `;
-    const values = [nombre, email, password, rol || 3]; // Rol 3 por defecto para clientes
+    const values = [nombre, email, password, rol_id || 1]; // Por defecto 1 o cliente según prefieras
     const result = await pool.query(query, values);
 
     res.status(201).json({ 
