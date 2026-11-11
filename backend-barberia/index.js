@@ -26,13 +26,11 @@ app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Consulta a la tabla usuarios (ajusta 'usuarios', 'correo', 'password' según el nombre real de tus columnas)
-   const query = 'SELECT * FROM usuarios WHERE email = $1 AND password = $2';
+    const query = 'SELECT * FROM usuarios WHERE email = $1 AND password = $2';
     const result = await pool.query(query, [email, password]);
 
     if (result.rows.length > 0) {
       const usuario = result.rows[0];
-      // Si el rol es 1 es admin, si es 2 es cliente (ajústalo según tu lógica)
       res.status(200).json({ 
         message: "Login exitoso", 
         usuario: { nombre: usuario.nombre, rol: usuario.rol } 
@@ -46,10 +44,32 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// 2. RUTA PARA EL ADMINVIEW (Obtener Citas)
+// 2. RUTA PARA REGISTRAR NUEVOS USUARIOS
+app.post('/api/usuarios', async (req, res) => {
+  const { nombre, email, password, rol } = req.body;
+
+  try {
+    const query = `
+      INSERT INTO usuarios (nombre, email, password, rol) 
+      VALUES ($1, $2, $3, $4) 
+      RETURNING *;
+    `;
+    const values = [nombre, email, password, rol || 3]; // Rol 3 por defecto para clientes
+    const result = await pool.query(query, values);
+
+    res.status(201).json({ 
+      message: "Usuario registrado con éxito", 
+      usuario: result.rows[0] 
+    });
+  } catch (error) {
+    console.error("Error al registrar usuario:", error);
+    res.status(500).json({ message: "Error interno al registrar el usuario" });
+  }
+});
+
+// 3. RUTA PARA EL ADMINVIEW (Obtener Citas)
 app.get('/api/admin/citas', async (req, res) => {
   try {
-    // Aquí puedes hacer un JOIN si tienes las citas en una tabla y los nombres en otra
     const query = 'SELECT id_cita, cliente_nombre, barbero_nombre, fecha, servicio, estado FROM citas ORDER BY fecha DESC';
     const result = await pool.query(query);
     res.status(200).json(result.rows);
@@ -62,4 +82,3 @@ app.get('/api/admin/citas', async (req, res) => {
 app.listen(port, () => {
   console.log(`Servidor Backend corriendo en el puerto ${port}`);
 });
-
