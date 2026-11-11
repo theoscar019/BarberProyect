@@ -25,7 +25,8 @@ export default function App() {
     if (emailLogin === "barbero") { setCurrentView('barbero'); return; }
 
     try {
-      const response = await fetch('https://upgraded-winner-6vprx6p557pc4pqq-3000.app.github.dev/api/login', { 
+      // Conectado directamente a tu backend oficial 24/7 en Render
+      const response = await fetch('https://barberproyect.onrender.com/api/login', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailLogin, password: passwordLogin }),

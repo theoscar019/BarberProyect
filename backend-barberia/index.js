@@ -62,3 +62,4 @@ app.get('/api/admin/citas', async (req, res) => {
 app.listen(port, () => {
   console.log(`Servidor Backend corriendo en el puerto ${port}`);
 });
+
