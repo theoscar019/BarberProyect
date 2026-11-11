@@ -27,7 +27,7 @@ app.post('/api/login', async (req, res) => {
 
   try {
     // Consulta a la tabla usuarios (ajusta 'usuarios', 'correo', 'password' según el nombre real de tus columnas)
-    const query = 'SELECT * FROM usuarios WHERE correo = $1 AND password = $2';
+   const query = 'SELECT * FROM usuarios WHERE email = $1 AND password = $2';
     const result = await pool.query(query, [email, password]);
 
     if (result.rows.length > 0) {

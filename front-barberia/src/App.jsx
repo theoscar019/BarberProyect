@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import './App.css'; // ESTA ERA LA LÍNEA QUE FALTABA
+import './App.css'; 
 import { Scissors, Calendar, Camera, User, ChevronLeft, Clock, CheckCircle2, Lock, Mail, LogOut } from 'lucide-react';
 import BarberView from './BarberView';
 import AdminView from './AdminView'; 
+import EscanerRostro from './EscanerRostro'; 
 
 export default function App() {
   const [currentView, setCurrentView] = useState('login');
@@ -57,7 +58,7 @@ export default function App() {
         BARBER SHOP
       </h1>
       
-      <div style={{ backgroundColor: CARD_BG, padding: '30px 25px', borderRadius: '4px', textAlign: 'left', border: `1px solid ${BORDER}` }}>
+      <div className="login-box" style={{ backgroundColor: CARD_BG, padding: '30px 25px', borderRadius: '4px', textAlign: 'left', border: `1px solid ${BORDER}` }}>
         <h3 style={{ color: '#ffffff', marginTop: 0, fontSize: '18px', fontWeight: '400', letterSpacing: '1px' }}>Iniciar Sesión</h3>
         <p style={{ color: TEXT_MUTED, fontSize: '13px', marginBottom: '30px' }}>Ingresa tus credenciales para agendar.</p>
         
@@ -117,26 +118,28 @@ export default function App() {
         </button>
       </div>
 
-      <div 
-        onClick={() => { setReservaStep(1); setCurrentView('reserva'); }} 
-        style={{ backgroundColor: CARD_BG, padding: '25px', borderRadius: '4px', marginBottom: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: `1px solid ${BORDER}`, borderLeft: `3px solid ${GOLD}` }}
-      >
-        <div>
-          <h3 style={{ margin: 0, color: '#ffffff', fontSize: '16px', paddingBottom: '6px', fontWeight: '400', letterSpacing: '0.5px' }}>Agendar Cita</h3>
-          <p style={{ margin: 0, color: TEXT_MUTED, fontSize: '13px', fontWeight: '300' }}>Reserva tu hora tradicional.</p>
+      <div className="options-grid">
+        <div 
+          onClick={() => { setReservaStep(1); setCurrentView('reserva'); }} 
+          style={{ backgroundColor: CARD_BG, padding: '25px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: `1px solid ${BORDER}`, borderLeft: `3px solid ${GOLD}` }}
+        >
+          <div>
+            <h3 style={{ margin: 0, color: '#ffffff', fontSize: '16px', paddingBottom: '6px', fontWeight: '400', letterSpacing: '0.5px' }}>Agendar Cita</h3>
+            <p style={{ margin: 0, color: TEXT_MUTED, fontSize: '13px', fontWeight: '300' }}>Reserva tu hora tradicional.</p>
+          </div>
+          <Calendar size={24} color={GOLD} strokeWidth={1.5} />
         </div>
-        <Calendar size={24} color={GOLD} strokeWidth={1.5} />
-      </div>
 
-      <div 
-        onClick={() => setCurrentView('ia')} 
-        style={{ backgroundColor: CARD_BG, padding: '25px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: `1px solid ${BORDER}`, borderLeft: `3px solid #E5E5E5` }}
-      >
-        <div>
-          <h3 style={{ margin: 0, color: '#ffffff', fontSize: '16px', paddingBottom: '6px', fontWeight: '400', letterSpacing: '0.5px' }}>Escáner IA</h3>
-          <p style={{ margin: 0, color: TEXT_MUTED, fontSize: '13px', fontWeight: '300' }}>Descubre el corte ideal.</p>
+        <div 
+          onClick={() => setCurrentView('ia')} 
+          style={{ backgroundColor: CARD_BG, padding: '25px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: `1px solid ${BORDER}`, borderLeft: `3px solid #E5E5E5` }}
+        >
+          <div>
+            <h3 style={{ margin: 0, color: '#ffffff', fontSize: '16px', paddingBottom: '6px', fontWeight: '400', letterSpacing: '0.5px' }}>Escáner IA</h3>
+            <p style={{ margin: 0, color: TEXT_MUTED, fontSize: '13px', fontWeight: '300' }}>Descubre el corte ideal.</p>
+          </div>
+          <Camera size={24} color="#E5E5E5" strokeWidth={1.5} />
         </div>
-        <Camera size={24} color="#E5E5E5" strokeWidth={1.5} />
       </div>
     </div>
   );
@@ -153,26 +156,29 @@ export default function App() {
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
           <h3 style={{ color: TEXT_MUTED, fontSize: '11px', letterSpacing: '2px', marginBottom: '25px', textTransform: 'uppercase' }}>1. Selecciona Servicio</h3>
           
-          {[
-            { n: 'Corte Clásico', t: '30 min', p: '$10.000' },
-            { n: 'Perfilado Barba', t: '15 min', p: '$5.000' },
-            { n: 'Corte + Barba', t: '45 min', p: '$14.000' }
-          ].map(s => (
-            <button key={s.n} onClick={() => setReservaStep(2)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: CARD_BG, padding: '22px', borderRadius: '4px', border: `1px solid ${BORDER}`, width: '100%', marginBottom: '15px', color: '#ffffff', cursor: 'pointer' }}>
-              <div style={{ textAlign: 'left' }}>
-                <p style={{ margin: '0 0 6px 0', fontWeight: '400', fontSize: '15px', color: '#ffffff', letterSpacing: '0.5px' }}>{s.n}</p>
-                <p style={{ margin: 0, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: TEXT_MUTED, fontWeight: '300' }}><Clock size={12} /> {s.t}</p>
-              </div>
-              <div style={{ fontWeight: '300', fontSize: '15px', color: GOLD }}>{s.p}</div>
-            </button>
-          ))}
+          <div className="options-grid">
+            {[
+              { n: 'Corte Clásico', t: '30 min', p: '$10.000' },
+              { n: 'Perfilado Barba', t: '15 min', p: '$5.000' },
+              { n: 'Corte + Barba', t: '45 min', p: '$14.000' },
+              { n: 'Diseño/Tribal', t: '20 min', p: '$7.000' }
+            ].map(s => (
+              <button key={s.n} onClick={() => setReservaStep(2)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: CARD_BG, padding: '22px', borderRadius: '4px', border: `1px solid ${BORDER}`, width: '100%', color: '#ffffff', cursor: 'pointer' }}>
+                <div style={{ textAlign: 'left' }}>
+                  <p style={{ margin: '0 0 6px 0', fontWeight: '400', fontSize: '15px', color: '#ffffff', letterSpacing: '0.5px' }}>{s.n}</p>
+                  <p style={{ margin: 0, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: TEXT_MUTED, fontWeight: '300' }}><Clock size={12} /> {s.t}</p>
+                </div>
+                <div style={{ fontWeight: '300', fontSize: '15px', color: GOLD }}>{s.p}</div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
       {reservaStep === 2 && (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
           <h3 style={{ color: TEXT_MUTED, fontSize: '11px', letterSpacing: '2px', marginBottom: '25px', textTransform: 'uppercase' }}>2. Horas Disponibles (Hoy)</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+          <div className="time-grid">
             <button onClick={() => setReservaStep(3)} style={{ backgroundColor: CARD_BG, color: '#ffffff', padding: '18px', borderRadius: '4px', border: `1px solid ${GOLD}`, cursor: 'pointer', fontSize: '14px', fontWeight: '300', letterSpacing: '1px' }}>10:00 AM</button>
             <button style={{ backgroundColor: BG_DARK, color: '#333', padding: '18px', borderRadius: '4px', border: `1px solid ${BORDER}`, cursor: 'not-allowed', fontSize: '14px', textDecoration: 'line-through', fontWeight: '300' }}>11:00 AM</button>
             <button onClick={() => setReservaStep(3)} style={{ backgroundColor: CARD_BG, color: '#ffffff', padding: '18px', borderRadius: '4px', border: `1px solid ${GOLD}`, cursor: 'pointer', fontSize: '14px', fontWeight: '300', letterSpacing: '1px' }}>12:30 PM</button>
@@ -182,7 +188,7 @@ export default function App() {
       )}
 
       {reservaStep === 3 && (
-        <div style={{ textAlign: 'center', marginTop: '60px', animation: 'fadeIn 0.6s ease-out' }}>
+        <div className="login-box" style={{ textAlign: 'center', marginTop: '60px', animation: 'fadeIn 0.6s ease-out' }}>
           <div style={{ display: 'inline-flex', padding: '20px', borderRadius: '50%', border: `1px solid ${GOLD}`, marginBottom: '30px' }}>
             <CheckCircle2 size={40} color={GOLD} strokeWidth={1.5} />
           </div>
@@ -197,15 +203,13 @@ export default function App() {
   );
 
   const renderRegistro = () => (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
+    <div style={{ padding: '30px 25px', textAlign: 'center' }}>
       <button onClick={() => setCurrentView('login')} style={{ background: 'transparent', border: 'none', color: TEXT_MUTED, cursor: 'pointer', fontSize: '14px' }}>Volver</button>
     </div>
   );
 
   const renderIA = () => (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
-      <button onClick={() => setCurrentView('dashboard')} style={{ background: 'transparent', border: 'none', color: TEXT_MUTED, cursor: 'pointer', fontSize: '14px' }}>Volver</button>
-    </div>
+    <EscanerRostro onVolver={() => setCurrentView('dashboard')} />
   );
 
   return (
