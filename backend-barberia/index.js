@@ -54,7 +54,7 @@ app.post('/api/usuarios', async (req, res) => {
       VALUES ($1, $2, $3, $4) 
       RETURNING *;
     `;
-    const values = [nombre, email, password, rol_id || 1]; // Por defecto 1 o cliente según prefieras
+    const values = [nombre, email, password, rol_id || 3]; // Por defecto 1 o cliente según prefieras
     const result = await pool.query(query, values);
 
     res.status(201).json({ 
