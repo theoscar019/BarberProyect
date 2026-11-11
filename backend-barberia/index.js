@@ -44,7 +44,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// 2. RUTA PARA REGISTRAR NUEVOS USUARIOS (Ajustada a la tabla 'usuarios' con 'rol_id')
+// 2. RUTA PARA REGISTRAR NUEVOS USUARIOS (Por defecto rol_id = 1 para Clientes)
 app.post('/api/usuarios', async (req, res) => {
   const { nombre, email, password, rol_id } = req.body;
 
@@ -54,7 +54,8 @@ app.post('/api/usuarios', async (req, res) => {
       VALUES ($1, $2, $3, $4) 
       RETURNING *;
     `;
-    const values = [nombre, email, password, rol_id || 3]; // Por defecto 1 o cliente según prefieras
+    // Por defecto asigna 1 (Cliente según tu tabla de roles en Neon)
+    const values = [nombre, email, password, rol_id || 1]; 
     const result = await pool.query(query, values);
 
     res.status(201).json({ 
