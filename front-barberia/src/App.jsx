@@ -40,9 +40,13 @@ export default function App() {
 
       if (response.ok) {
         setUserName(data.usuario?.nombre || 'Cliente');
-        if (data.usuario?.rol === 'admin' || data.usuario?.rol === 1) {
+        
+        // Mapeo exacto según tu tabla de roles en Neon:
+        // 3 = Administrador, 2 = Barbero, 1 = Cliente
+        const rolUsuario = Number(data.usuario?.rol);
+        if (rolUsuario === 3) {
           setCurrentView('admin');
-        } else if (data.usuario?.rol === 'barbero' || data.usuario?.rol === 2) {
+        } else if (rolUsuario === 2) {
           setCurrentView('barbero');
         } else {
           setCurrentView('dashboard');
@@ -62,7 +66,7 @@ export default function App() {
       const response = await fetch('https://barberproyect.onrender.com/api/usuarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: regNombre, email: regEmail, password: regPassword, rol: 3 })
+        body: JSON.stringify({ nombre: regNombre, email: regEmail, password: regPassword, rol_id: 1 })
       });
 
       const data = await response.json();
