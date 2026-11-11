@@ -1,90 +1,77 @@
-* {
-  box-sizing: border-box;
+/* =========================================
+   DISEÑO PREMIUM Y 100% RESPONSIVE
+   ========================================= */
+
+body {
+  background-color: #050505;
   margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #E5E5E5;
+}
+
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+/* 1. DISEÑO BASE (CELULARES) */
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0 auto;
+  box-sizing: border-box;
+  background-color: #050505;
   padding: 0;
 }
 
-body {
-  background-color: #0d1117;
-  color: #c9d1d9;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.login-box {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.options-grid {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.container {
-  width: 100%;
-  max-width: 440px;
-  padding: 20px;
+.time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columnas en celular */
+  gap: 15px;
 }
 
-.card {
-  background-color: #161b22;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-  text-align: center;
-  border: 1px solid #30363d;
+/* 2. DISEÑO PARA TABLETS Y COMPUTADORES */
+@media (min-width: 768px) {
+  .app-container {
+    max-width: 1200px; /* Se expande para aprovechar monitores grandes */
+    padding: 40px;
+  }
+  
+  .login-box {
+    max-width: 450px;
+    margin: 0 auto; /* Centra el cuadro de login en PC */
+    box-shadow: 0 20px 50px rgba(200, 169, 81, 0.05);
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Convierte listas en 2 columnas en PC */
+    gap: 25px;
+  }
+
+  .time-grid {
+    grid-template-columns: repeat(4, 1fr); /* 4 columnas de horas en PC */
+  }
 }
 
-.card h1 {
-  color: #58a6ff;
-  margin-bottom: 8px;
-  font-size: 2.2rem;
-  letter-spacing: -0.5px;
-}
-
-.card p {
-  color: #8b949e;
-  margin-bottom: 30px;
-  font-size: 0.95rem;
-}
-
-.input-group {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-  color: #c9d1d9;
-  font-weight: 500;
-}
-
-.input-group input, .input-group select {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 8px;
-  border: 1px solid #30363d;
-  background-color: #0d1117;
-  color: white;
-  font-size: 1rem;
-}
-
-.input-group input:focus, .input-group select:focus {
-  outline: none;
-  border-color: #58a6ff;
-  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
-}
-
-.btn-reservar {
-  width: 100%;
-  padding: 14px;
-  background-color: #238636;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1.05rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 10px;
-}
-
-.btn-reservar:hover {
-  background-color: #2ea043;
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

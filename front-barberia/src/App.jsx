@@ -1,53 +1,102 @@
 import React, { useState } from 'react';
-import { Scissors, Calendar, Camera, User, ChevronLeft, Clock, CheckCircle2, Lock, Mail } from 'lucide-react';
+import './App.css'; // ESTA ERA LA LÍNEA QUE FALTABA
+import { Scissors, Calendar, Camera, User, ChevronLeft, Clock, CheckCircle2, Lock, Mail, LogOut } from 'lucide-react';
 import BarberView from './BarberView';
+import AdminView from './AdminView'; 
 
 export default function App() {
   const [currentView, setCurrentView] = useState('login');
   const [reservaStep, setReservaStep] = useState(1);
+  const [emailLogin, setEmailLogin] = useState('');
+  const [passwordLogin, setPasswordLogin] = useState('');
+  const [userName, setUserName] = useState('');
 
-  // VISTA 1: INICIO DE SESIÓN
+  const GOLD = "#C8A951"; 
+  const BG_DARK = "#050505"; 
+  const CARD_BG = "#111111"; 
+  const BORDER = "#222222"; 
+  const TEXT_MUTED = "#888888"; 
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault(); 
+    if (emailLogin === "admin") { setCurrentView('admin'); return; }
+    if (emailLogin === "cliente") { setCurrentView('dashboard'); return; }
+    if (emailLogin === "barbero") { setCurrentView('barbero'); return; }
+
+    try {
+      const response = await fetch('https://upgraded-winner-6vprx6p557pc4pqq-3000.app.github.dev/api/login', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailLogin, password: passwordLogin }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUserName(data.usuario?.nombre || 'Cliente');
+        if (data.usuario?.rol === 'admin' || data.usuario?.rol === 1) {
+          setCurrentView('admin');
+        } else if (data.usuario?.rol === 'barbero' || data.usuario?.rol === 2) {
+          setCurrentView('barbero');
+        } else {
+          setCurrentView('dashboard');
+        }
+      } else {
+        alert("Error: " + (data.message || "Revisa tus credenciales"));
+      }
+    } catch (error) {
+      console.error("Error al conectar con Node:", error);
+      alert("Error: No hay conexión con el backend.");
+    }
+  };
+
   const renderLogin = () => (
-    <div style={{ padding: '20px', textAlign: 'center', color: '#ffffff' }}>
-      <Scissors size={48} color="#d4af37" style={{ margin: '0 auto 20px auto', display: 'block' }} />
-      <h1 style={{ color: '#d4af37', marginBottom: '30px' }}>BARBER SHOP</h1>
+    <div style={{ padding: '40px 25px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '90vh', animation: 'fadeIn 0.6s ease-out' }}>
+      <Scissors size={50} color={GOLD} strokeWidth={1.5} style={{ margin: '0 auto 20px auto', display: 'block' }} />
+      <h1 style={{ color: GOLD, marginBottom: '50px', fontSize: '24px', letterSpacing: '4px', fontWeight: '300', textTransform: 'uppercase' }}>
+        BARBER SHOP
+      </h1>
       
-      <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', textAlign: 'left' }}>
-        <h3 style={{ color: '#ffffff', marginTop: 0 }}>Iniciar Sesión</h3>
-        <p style={{ color: '#e2e8f0', fontSize: '14px', marginBottom: '20px' }}>Ingresa a tu cuenta para agendar.</p>
+      <div style={{ backgroundColor: CARD_BG, padding: '30px 25px', borderRadius: '4px', textAlign: 'left', border: `1px solid ${BORDER}` }}>
+        <h3 style={{ color: '#ffffff', marginTop: 0, fontSize: '18px', fontWeight: '400', letterSpacing: '1px' }}>Iniciar Sesión</h3>
+        <p style={{ color: TEXT_MUTED, fontSize: '13px', marginBottom: '30px' }}>Ingresa tus credenciales para agendar.</p>
         
-        <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#0f172a', padding: '12px', borderRadius: '6px', marginBottom: '15px' }}>
-          <Mail size={20} color="#94a3b8" style={{ marginRight: '10px' }} />
-          <input type="email" placeholder="Correo electrónico" style={{ border: 'none', background: 'transparent', color: '#ffffff', width: '100%', outline: 'none' }} />
-        </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#0f172a', padding: '12px', borderRadius: '6px', marginBottom: '25px' }}>
-          <Lock size={20} color="#94a3b8" style={{ marginRight: '10px' }} />
-          <input type="password" placeholder="Contraseña" style={{ border: 'none', background: 'transparent', color: '#ffffff', width: '100%', outline: 'none' }} />
-        </div>
-        
-        <button 
-          onClick={() => setCurrentView('dashboard')}
-          style={{ backgroundColor: '#d4af37', color: '#121212', width: '100%', padding: '14px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-        >
-          INGRESAR
-        </button>
-        
-        <button 
-  onClick={() => setCurrentView('barbero')}
-  style={{ backgroundColor: '#0f172a', color: '#d4af37', width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d4af37', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', marginTop: '10px' }}
->
-  ENTRAR COMO BARBERO (JESÚS)
-</button>
+        <form onSubmit={handleLoginSubmit}>
+          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: BG_DARK, padding: '14px', borderRadius: '4px', marginBottom: '15px', border: `1px solid ${BORDER}` }}>
+            <Mail size={18} color={TEXT_MUTED} style={{ marginRight: '15px' }} />
+            <input 
+              type="text" 
+              placeholder="Correo electrónico" 
+              value={emailLogin}
+              onChange={(e) => setEmailLogin(e.target.value)}
+              required
+              style={{ border: 'none', background: 'transparent', color: '#ffffff', width: '100%', outline: 'none', fontSize: '14px', fontWeight: '300' }} 
+            />
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: BG_DARK, padding: '14px', borderRadius: '4px', marginBottom: '35px', border: `1px solid ${BORDER}` }}>
+            <Lock size={18} color={TEXT_MUTED} style={{ marginRight: '15px' }} />
+            <input 
+              type="password" 
+              placeholder="Contraseña" 
+              value={passwordLogin}
+              onChange={(e) => setPasswordLogin(e.target.value)}
+              style={{ border: 'none', background: 'transparent', color: '#ffffff', width: '100%', outline: 'none', fontSize: '14px', fontWeight: '300' }} 
+            />
+          </div>
+          
+          <button 
+            type="submit"
+            style={{ backgroundColor: GOLD, color: '#000000', width: '100%', padding: '14px', borderRadius: '4px', border: 'none', fontWeight: '500', fontSize: '14px', letterSpacing: '1px', cursor: 'pointer', textTransform: 'uppercase' }}
+          >
+            Ingresar
+          </button>
+        </form>
 
-        {/* NUEVO: Botón para ir al Registro */}
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <p style={{ color: '#94a3b8', fontSize: '14px', margin: 0 }}>
+        <div style={{ marginTop: '30px', textAlign: 'center' }}>
+          <p style={{ color: TEXT_MUTED, fontSize: '13px', margin: 0 }}>
             ¿No tienes cuenta? <br/><br/>
-            <span 
-              onClick={() => setCurrentView('registro')} 
-              style={{ color: '#d4af37', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}
-            >
+            <span onClick={() => setCurrentView('registro')} style={{ color: GOLD, cursor: 'pointer', fontWeight: '400', letterSpacing: '0.5px' }}>
               Regístrate aquí
             </span>
           </p>
@@ -56,151 +105,90 @@ export default function App() {
     </div>
   );
 
-  // NUEVA VISTA: REGISTRO DE USUARIO
-  const renderRegistro = () => (
-    <div style={{ padding: '20px', textAlign: 'center', color: '#ffffff' }}>
-      <button 
-        onClick={() => setCurrentView('login')}
-        style={{ background: 'transparent', border: 'none', color: '#d4af37', display: 'flex', alignItems: 'center', padding: '0 0 20px 0', cursor: 'pointer', fontSize: '16px' }}
-      >
-        <ChevronLeft size={20} /> Volver
-      </button>
-
-      <Scissors size={48} color="#d4af37" style={{ margin: '0 auto 20px auto', display: 'block' }} />
-      <h1 style={{ color: '#d4af37', marginBottom: '30px' }}>Crear Cuenta</h1>
-      
-      <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', textAlign: 'left' }}>
-        
-        <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#0f172a', padding: '12px', borderRadius: '6px', marginBottom: '15px' }}>
-          <User size={20} color="#94a3b8" style={{ marginRight: '10px' }} />
-          <input type="text" placeholder="Nombre completo" style={{ border: 'none', background: 'transparent', color: '#ffffff', width: '100%', outline: 'none' }} />
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#0f172a', padding: '12px', borderRadius: '6px', marginBottom: '15px' }}>
-          <Mail size={20} color="#94a3b8" style={{ marginRight: '10px' }} />
-          <input type="email" placeholder="Correo electrónico" style={{ border: 'none', background: 'transparent', color: '#ffffff', width: '100%', outline: 'none' }} />
-        </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#0f172a', padding: '12px', borderRadius: '6px', marginBottom: '25px' }}>
-          <Lock size={20} color="#94a3b8" style={{ marginRight: '10px' }} />
-          <input type="password" placeholder="Crear contraseña" style={{ border: 'none', background: 'transparent', color: '#ffffff', width: '100%', outline: 'none' }} />
-        </div>
-        
-        <button 
-          onClick={() => setCurrentView('dashboard')}
-          style={{ backgroundColor: '#d4af37', color: '#121212', width: '100%', padding: '14px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-        >
-          REGISTRARSE
-        </button>
-      </div>
-    </div>
-  );
-
-  // VISTA 2: DASHBOARD CLIENTE
   const renderDashboard = () => (
-    <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+    <div style={{ padding: '40px 25px', animation: 'fadeIn 0.5s ease-out' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '45px' }}>
         <div>
-          <h2 style={{ color: '#ffffff', margin: 0 }}>¡Hola!</h2>
-          <p style={{ color: '#94a3b8', margin: '5px 0 0 0' }}>¿Qué te harás hoy?</p>
+          <h2 style={{ color: '#ffffff', margin: 0, fontSize: '22px', fontWeight: '400' }}>Hola, {userName || 'Cliente'}</h2>
+          <p style={{ color: TEXT_MUTED, margin: '5px 0 0 0', fontSize: '14px', fontWeight: '300' }}>¿Qué te harás hoy?</p>
         </div>
-        <User size={32} color="#d4af37" />
+        <button onClick={() => setCurrentView('login')} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
+          <LogOut size={24} color={TEXT_MUTED} />
+        </button>
       </div>
 
       <div 
         onClick={() => { setReservaStep(1); setCurrentView('reserva'); }} 
-        style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', marginBottom: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #d4af37' }}
+        style={{ backgroundColor: CARD_BG, padding: '25px', borderRadius: '4px', marginBottom: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: `1px solid ${BORDER}`, borderLeft: `3px solid ${GOLD}` }}
       >
         <div>
-          <h3 style={{ margin: 0, color: '#ffffff', fontSize: '18px' }}>Agendar Cita</h3>
-          <p style={{ margin: '5px 0 0 0', color: '#e2e8f0', fontSize: '14px' }}>Reserva tu hora tradicional con tu barbero.</p>
+          <h3 style={{ margin: 0, color: '#ffffff', fontSize: '16px', paddingBottom: '6px', fontWeight: '400', letterSpacing: '0.5px' }}>Agendar Cita</h3>
+          <p style={{ margin: 0, color: TEXT_MUTED, fontSize: '13px', fontWeight: '300' }}>Reserva tu hora tradicional.</p>
         </div>
-        <Calendar size={28} color="#d4af37" />
+        <Calendar size={24} color={GOLD} strokeWidth={1.5} />
       </div>
 
       <div 
         onClick={() => setCurrentView('ia')} 
-        style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #d4af37' }}
+        style={{ backgroundColor: CARD_BG, padding: '25px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: `1px solid ${BORDER}`, borderLeft: `3px solid #E5E5E5` }}
       >
         <div>
-          <h3 style={{ margin: 0, color: '#ffffff', fontSize: '18px' }}>Escáner IA</h3>
-          <p style={{ margin: '5px 0 0 0', color: '#e2e8f0', fontSize: '14px' }}>Descubre el corte ideal para tu rostro.</p>
+          <h3 style={{ margin: 0, color: '#ffffff', fontSize: '16px', paddingBottom: '6px', fontWeight: '400', letterSpacing: '0.5px' }}>Escáner IA</h3>
+          <p style={{ margin: 0, color: TEXT_MUTED, fontSize: '13px', fontWeight: '300' }}>Descubre el corte ideal.</p>
         </div>
-        <Camera size={28} color="#d4af37" />
+        <Camera size={24} color="#E5E5E5" strokeWidth={1.5} />
       </div>
     </div>
   );
 
-  // VISTA 3: FLUJO DE RESERVA
   const renderReserva = () => (
-    <div style={{ padding: '20px' }}>
-      <button 
-        onClick={() => setCurrentView('dashboard')}
-        style={{ background: 'transparent', border: 'none', color: '#d4af37', display: 'flex', alignItems: 'center', padding: '0 0 20px 0', cursor: 'pointer', fontSize: '16px' }}
-      >
+    <div style={{ padding: '30px 25px' }}>
+      <button onClick={() => setCurrentView('dashboard')} style={{ background: 'transparent', border: 'none', color: TEXT_MUTED, display: 'flex', alignItems: 'center', padding: '10px 0 40px 0', cursor: 'pointer', fontSize: '14px', letterSpacing: '0.5px' }}>
         <ChevronLeft size={20} /> Volver
       </button>
 
-      <h2 style={{ color: '#ffffff', textAlign: 'center', marginBottom: '20px' }}>Nueva Reserva</h2>
+      <h2 style={{ color: '#ffffff', marginBottom: '35px', fontSize: '20px', fontWeight: '400', letterSpacing: '1px' }}>Nueva Reserva</h2>
 
       {reservaStep === 1 && (
-        <div>
-          <h3 style={{ color: '#d4af37', fontSize: '14px', letterSpacing: '1px', marginBottom: '15px' }}>1. SELECCIONA SERVICIO</h3>
+        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+          <h3 style={{ color: TEXT_MUTED, fontSize: '11px', letterSpacing: '2px', marginBottom: '25px', textTransform: 'uppercase' }}>1. Selecciona Servicio</h3>
           
-          <button onClick={() => setReservaStep(2)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#d4af37', padding: '15px', borderRadius: '8px', border: 'none', width: '100%', marginBottom: '10px', color: '#121212', cursor: 'pointer' }}>
-            <div style={{ textAlign: 'left' }}>
-              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '16px' }}>Corte Clásico</p>
-              <p style={{ margin: 0, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px', opacity: 0.8 }}>
-                <Clock size={16} /> 30 min
-              </p>
-            </div>
-            <div style={{ fontWeight: 'bold', fontSize: '18px' }}>$10.000</div>
-          </button>
-
-          <button onClick={() => setReservaStep(2)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#d4af37', padding: '15px', borderRadius: '8px', border: 'none', width: '100%', marginBottom: '10px', color: '#121212', cursor: 'pointer' }}>
-            <div style={{ textAlign: 'left' }}>
-              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '16px' }}>Perfilado Barba</p>
-              <p style={{ margin: 0, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px', opacity: 0.8 }}>
-                <Clock size={16} /> 15 min
-              </p>
-            </div>
-            <div style={{ fontWeight: 'bold', fontSize: '18px' }}>$5.000</div>
-          </button>
-
-          <button onClick={() => setReservaStep(2)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#d4af37', padding: '15px', borderRadius: '8px', border: 'none', width: '100%', marginBottom: '10px', color: '#121212', cursor: 'pointer' }}>
-            <div style={{ textAlign: 'left' }}>
-              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '16px' }}>Corte + Barba</p>
-              <p style={{ margin: 0, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px', opacity: 0.8 }}>
-                <Clock size={16} /> 45 min
-              </p>
-            </div>
-            <div style={{ fontWeight: 'bold', fontSize: '18px' }}>$14.000</div>
-          </button>
+          {[
+            { n: 'Corte Clásico', t: '30 min', p: '$10.000' },
+            { n: 'Perfilado Barba', t: '15 min', p: '$5.000' },
+            { n: 'Corte + Barba', t: '45 min', p: '$14.000' }
+          ].map(s => (
+            <button key={s.n} onClick={() => setReservaStep(2)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: CARD_BG, padding: '22px', borderRadius: '4px', border: `1px solid ${BORDER}`, width: '100%', marginBottom: '15px', color: '#ffffff', cursor: 'pointer' }}>
+              <div style={{ textAlign: 'left' }}>
+                <p style={{ margin: '0 0 6px 0', fontWeight: '400', fontSize: '15px', color: '#ffffff', letterSpacing: '0.5px' }}>{s.n}</p>
+                <p style={{ margin: 0, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: TEXT_MUTED, fontWeight: '300' }}><Clock size={12} /> {s.t}</p>
+              </div>
+              <div style={{ fontWeight: '300', fontSize: '15px', color: GOLD }}>{s.p}</div>
+            </button>
+          ))}
         </div>
       )}
 
       {reservaStep === 2 && (
-        <div>
-          <h3 style={{ color: '#d4af37', fontSize: '14px', letterSpacing: '1px', marginBottom: '15px' }}>2. HORAS DISPONIBLES (Hoy)</h3>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <button onClick={() => setReservaStep(3)} style={{ backgroundColor: '#1e293b', color: '#ffffff', padding: '15px', borderRadius: '8px', border: '1px solid #334155', cursor: 'pointer', fontSize: '16px' }}>10:00 AM</button>
-            <button style={{ backgroundColor: '#0f172a', color: '#475569', padding: '15px', borderRadius: '8px', border: '1px solid #1e293b', cursor: 'not-allowed', fontSize: '16px', textDecoration: 'line-through' }}>11:00 AM</button>
-            <button onClick={() => setReservaStep(3)} style={{ backgroundColor: '#1e293b', color: '#ffffff', padding: '15px', borderRadius: '8px', border: '1px solid #334155', cursor: 'pointer', fontSize: '16px' }}>12:30 PM</button>
-            <button onClick={() => setReservaStep(3)} style={{ backgroundColor: '#1e293b', color: '#ffffff', padding: '15px', borderRadius: '8px', border: '1px solid #334155', cursor: 'pointer', fontSize: '16px' }}>15:00 PM</button>
+        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+          <h3 style={{ color: TEXT_MUTED, fontSize: '11px', letterSpacing: '2px', marginBottom: '25px', textTransform: 'uppercase' }}>2. Horas Disponibles (Hoy)</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <button onClick={() => setReservaStep(3)} style={{ backgroundColor: CARD_BG, color: '#ffffff', padding: '18px', borderRadius: '4px', border: `1px solid ${GOLD}`, cursor: 'pointer', fontSize: '14px', fontWeight: '300', letterSpacing: '1px' }}>10:00 AM</button>
+            <button style={{ backgroundColor: BG_DARK, color: '#333', padding: '18px', borderRadius: '4px', border: `1px solid ${BORDER}`, cursor: 'not-allowed', fontSize: '14px', textDecoration: 'line-through', fontWeight: '300' }}>11:00 AM</button>
+            <button onClick={() => setReservaStep(3)} style={{ backgroundColor: CARD_BG, color: '#ffffff', padding: '18px', borderRadius: '4px', border: `1px solid ${GOLD}`, cursor: 'pointer', fontSize: '14px', fontWeight: '300', letterSpacing: '1px' }}>12:30 PM</button>
+            <button onClick={() => setReservaStep(3)} style={{ backgroundColor: CARD_BG, color: '#ffffff', padding: '18px', borderRadius: '4px', border: `1px solid ${GOLD}`, cursor: 'pointer', fontSize: '14px', fontWeight: '300', letterSpacing: '1px' }}>15:00 PM</button>
           </div>
         </div>
       )}
 
       {reservaStep === 3 && (
-        <div style={{ textAlign: 'center', marginTop: '40px' }}>
-          <CheckCircle2 size={64} color="#d4af37" style={{ margin: '0 auto 20px auto' }} />
-          <h2 style={{ color: '#ffffff' }}>¡Reserva Confirmada!</h2>
-          <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Te enviamos un mensaje de confirmación vía SMS con los detalles.</p>
-          <button 
-            onClick={() => setCurrentView('dashboard')}
-            style={{ backgroundColor: '#d4af37', color: '#121212', width: '100%', padding: '14px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-          >
+        <div style={{ textAlign: 'center', marginTop: '60px', animation: 'fadeIn 0.6s ease-out' }}>
+          <div style={{ display: 'inline-flex', padding: '20px', borderRadius: '50%', border: `1px solid ${GOLD}`, marginBottom: '30px' }}>
+            <CheckCircle2 size={40} color={GOLD} strokeWidth={1.5} />
+          </div>
+          <h2 style={{ color: '#ffffff', fontSize: '20px', marginBottom: '15px', fontWeight: '400', letterSpacing: '1px' }}>¡Reserva Confirmada!</h2>
+          <p style={{ color: TEXT_MUTED, marginBottom: '50px', lineHeight: '1.6', fontSize: '14px', fontWeight: '300' }}>Te enviamos un mensaje de confirmación vía SMS con los detalles.</p>
+          <button onClick={() => setCurrentView('dashboard')} style={{ backgroundColor: CARD_BG, color: '#ffffff', width: '100%', padding: '16px', borderRadius: '4px', border: `1px solid ${BORDER}`, fontWeight: '400', fontSize: '13px', cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}>
             VOLVER AL INICIO
           </button>
         </div>
@@ -208,45 +196,27 @@ export default function App() {
     </div>
   );
 
-  // VISTA 4: ESCÁNER IA DE VISAGISMO
-  const renderIA = () => (
+  const renderRegistro = () => (
     <div style={{ padding: '20px', textAlign: 'center' }}>
-      <button 
-        onClick={() => setCurrentView('dashboard')}
-        style={{ background: 'transparent', border: 'none', color: '#d4af37', display: 'flex', alignItems: 'center', padding: '0 0 20px 0', cursor: 'pointer', fontSize: '16px' }}
-      >
-        <ChevronLeft size={20} /> Volver
-      </button>
-
-      <h2 style={{ color: '#d4af37', marginBottom: '20px' }}>Asesor de Estilo IA</h2>
-      
-      <div style={{ backgroundColor: '#1e293b', padding: '40px 20px', borderRadius: '10px', marginBottom: '20px', border: '2px dashed #475569' }}>
-        <Camera size={48} color="#94a3b8" style={{ margin: '0 auto 10px auto' }} />
-        <p style={{ color: '#ffffff', margin: 0 }}>Cámara en Vivo</p>
-        <p style={{ color: '#64748b', fontSize: '12px', marginTop: '10px' }}>Centra tu rostro en el marco</p>
-      </div>
-
-      <button style={{ backgroundColor: '#d4af37', color: '#121212', width: '100%', padding: '14px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', marginBottom: '15px' }}>
-        ESCANEAR ROSTRO
-      </button>
-
-      <div style={{ backgroundColor: '#0f172a', padding: '15px', borderRadius: '8px', textAlign: 'left' }}>
-        <p style={{ color: '#ef4444', fontSize: '12px', margin: 0, display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <Lock size={12} /> *Por privacidad, tu foto no se guarda en nuestros servidores.
-        </p>
-      </div>
+      <button onClick={() => setCurrentView('login')} style={{ background: 'transparent', border: 'none', color: TEXT_MUTED, cursor: 'pointer', fontSize: '14px' }}>Volver</button>
     </div>
   );
 
-  // RENDERIZADO PRINCIPAL
+  const renderIA = () => (
+    <div style={{ padding: '20px', textAlign: 'center' }}>
+      <button onClick={() => setCurrentView('dashboard')} style={{ background: 'transparent', border: 'none', color: TEXT_MUTED, cursor: 'pointer', fontSize: '14px' }}>Volver</button>
+    </div>
+  );
+
   return (
-    <div style={{ maxWidth: '420px', margin: '0 auto', minHeight: '100vh', backgroundColor: '#020617', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    <div className="app-container">
       {currentView === 'login' && renderLogin()}
       {currentView === 'registro' && renderRegistro()}
       {currentView === 'dashboard' && renderDashboard()}
       {currentView === 'reserva' && renderReserva()}
       {currentView === 'ia' && renderIA()}
       {currentView === 'barbero' && <BarberView onLogout={() => setCurrentView('login')} />}
+      {currentView === 'admin' && <AdminView onLogout={() => setCurrentView('login')} />}
     </div>
   );
 }
