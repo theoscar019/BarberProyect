@@ -12,6 +12,11 @@ export default function App() {
   const [passwordLogin, setPasswordLogin] = useState('');
   const [userName, setUserName] = useState('');
 
+  // Estados para el formulario de registro
+  const [regNombre, setRegNombre] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+
   const GOLD = "#C8A951"; 
   const BG_DARK = "#050505"; 
   const CARD_BG = "#111111"; 
@@ -25,7 +30,6 @@ export default function App() {
     if (emailLogin === "barbero") { setCurrentView('barbero'); return; }
 
     try {
-      // Conectado directamente a tu backend oficial 24/7 en Render
       const response = await fetch('https://barberproyect.onrender.com/api/login', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,6 +53,28 @@ export default function App() {
     } catch (error) {
       console.error("Error al conectar con Node:", error);
       alert("Error: No hay conexión con el backend.");
+    }
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('https://barberproyect.onrender.com/api/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: regNombre, email: regEmail, password: regPassword, rol: 3 })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+        setCurrentView('login');
+      } else {
+        alert("Error al registrarse: " + (data.message || "Inténtalo de nuevo"));
+      }
+    } catch (error) {
+      console.error("Error de red:", error);
+      alert("No se pudo conectar con el servidor para registrar.");
     }
   };
 
@@ -204,8 +230,70 @@ export default function App() {
   );
 
   const renderRegistro = () => (
-    <div style={{ padding: '30px 25px', textAlign: 'center' }}>
-      <button onClick={() => setCurrentView('login')} style={{ background: 'transparent', border: 'none', color: TEXT_MUTED, cursor: 'pointer', fontSize: '14px' }}>Volver</button>
+    <div style={{ padding: '40px 25px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '90vh', animation: 'fadeIn 0.6s ease-out' }}>
+      <Scissors size={50} color={GOLD} strokeWidth={1.5} style={{ margin: '0 auto 20px auto', display: 'block' }} />
+      <h1 style={{ color: GOLD, marginBottom: '30px', fontSize: '24px', letterSpacing: '4px', fontWeight: '300', textTransform: 'uppercase' }}>
+        NUEVA CUENTA
+      </h1>
+      
+      <div className="login-box" style={{ backgroundColor: CARD_BG, padding: '30px 25px', borderRadius: '4px', textAlign: 'left', border: `1px solid ${BORDER}` }}>
+        <h3 style={{ color: '#ffffff', marginTop: 0, fontSize: '18px', fontWeight: '400', letterSpacing: '1px' }}>Registro de Cliente</h3>
+        <p style={{ color: TEXT_MUTED, fontSize: '13px', marginBottom: '30px' }}>Crea tu cuenta para comenzar a agendar.</p>
+        
+        <form onSubmit={handleRegisterSubmit}>
+          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: BG_DARK, padding: '14px', borderRadius: '4px', marginBottom: '15px', border: `1px solid ${BORDER}` }}>
+            <User size={18} color={TEXT_MUTED} style={{ marginRight: '15px' }} />
+            <input 
+              type="text" 
+              placeholder="Nombre completo" 
+              value={regNombre}
+              onChange={(e) => setRegNombre(e.target.value)}
+              required
+              style={{ border: 'none', background: 'transparent', color: '#ffffff', width: '100%', outline: 'none', fontSize: '14px', fontWeight: '300' }} 
+            />
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: BG_DARK, padding: '14px', borderRadius: '4px', marginBottom: '15px', border: `1px solid ${BORDER}` }}>
+            <Mail size={18} color={TEXT_MUTED} style={{ marginRight: '15px' }} />
+            <input 
+              type="email" 
+              placeholder="Correo electrónico" 
+              value={regEmail}
+              onChange={(e) => setRegEmail(e.target.value)}
+              required
+              style={{ border: 'none', background: 'transparent', color: '#ffffff', width: '100%', outline: 'none', fontSize: '14px', fontWeight: '300' }} 
+            />
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: BG_DARK, padding: '14px', borderRadius: '4px', marginBottom: '30px', border: `1px solid ${BORDER}` }}>
+            <Lock size={18} color={TEXT_MUTED} style={{ marginRight: '15px' }} />
+            <input 
+              type="password" 
+              placeholder="Contraseña" 
+              value={regPassword}
+              onChange={(e) => setRegPassword(e.target.value)}
+              required
+              style={{ border: 'none', background: 'transparent', color: '#ffffff', width: '100%', outline: 'none', fontSize: '14px', fontWeight: '300' }} 
+            />
+          </div>
+          
+          <button 
+            type="submit"
+            style={{ backgroundColor: GOLD, color: '#000000', width: '100%', padding: '14px', borderRadius: '4px', border: 'none', fontWeight: '500', fontSize: '14px', letterSpacing: '1px', cursor: 'pointer', textTransform: 'uppercase', marginBottom: '15px' }}
+          >
+            Registrarse
+          </button>
+        </form>
+
+        <div style={{ textAlign: 'center' }}>
+          <button 
+            onClick={() => setCurrentView('login')} 
+            style={{ background: 'transparent', border: 'none', color: TEXT_MUTED, cursor: 'pointer', fontSize: '13px', letterSpacing: '0.5px' }}
+          >
+            ¿Ya tienes cuenta? Inicia sesión
+          </button>
+        </div>
+      </div>
     </div>
   );
 
