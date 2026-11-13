@@ -16,8 +16,8 @@ app.use(express.json());
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'tu_correo_barberia@gmail.com', // REEMPLAZA CON TU CORREO DE GMAIL
-    pass: 'tus_16_letras_de_app_password' // REEMPLAZA CON TU CONTRASEÑA DE APLICACIÓN
+    user: 'barberproyect4@gmail.com', // Tu correo oficial
+    pass: 'BarberProyect2006.' 
   }
 });
 
@@ -119,7 +119,7 @@ app.post('/api/reservas', async (req, res) => {
     if (userResult.rows.length > 0) {
       const cliente = userResult.rows[0];
       const mailOptions = {
-        from: 'tu_correo_barberia@gmail.com', // REEMPLAZA CON TU CORREO DE GMAIL
+        from: 'barberproyect4@gmail.com', // El correo que acabas de crear
         to: cliente.email,
         subject: '💈 Confirmación de tu reserva - Barber Shop',
         html: `
@@ -135,8 +135,13 @@ app.post('/api/reservas', async (req, res) => {
           </div>
         `
       };
-      transporter.sendMail(mailOptions, (error) => {
-        if (error) console.error("Error enviando correo:", error);
+      
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Error enviando correo:", error);
+        } else {
+          console.log("Correo enviado exitosamente: " + info.response);
+        }
       });
     }
 
