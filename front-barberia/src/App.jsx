@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css'; 
-import { Scissors, Calendar, Camera, User, ChevronLeft, Clock, CheckCircle2, Lock, Mail, LogOut } from 'lucide-react';
+import { Scissors, Camera, User, ChevronLeft, CheckCircle2, LogOut } from 'lucide-react';
 import BarberView from './BarberView';
 import AdminView from './AdminView'; 
 import EscanerRostro from './EscanerRostro'; 
@@ -9,18 +9,18 @@ export default function App() {
   const [currentView, setCurrentView] = useState('login');
   const [reservaStep, setReservaStep] = useState(1);
   
-  // Estados de sesión
   const [emailLogin, setEmailLogin] = useState('');
   const [passwordLogin, setPasswordLogin] = useState('');
   const [userId, setUserId] = useState(null);
   const [userName, setUserName] = useState('');
 
-  // Estados de reserva
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date().toISOString().split('T')[0]); // Fecha de hoy por defecto
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date().toISOString().split('T')[0]);
   const [horasOcupadas, setHorasOcupadas] = useState([]);
   const [horaSeleccionada, setHoraSeleccionada] = useState('');
+  
+  const [barberos, setBarberos] = useState([]);
+  const [barberoSeleccionado, setBarberoSeleccionado] = useState(null);
 
-  // Estados de registro
   const [regNombre, setRegNombre] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
@@ -31,24 +31,22 @@ export default function App() {
   const BORDER = "#222222"; 
   const TEXT_MUTED = "#888888"; 
 
-  // Horarios disponibles en la barbería
   const horariosBase = ['10:00', '11:00', '12:30', '15:00', '16:00', '17:30'];
+
+  const API_URL = 'https://barberproyect.onrender.com/api'; // Ajusta si pruebas en local (http://localhost:3000/api)
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault(); 
     try {
-      const response = await fetch('https://barberproyect.onrender.com/api/login', { 
+      const response = await fetch(`${API_URL}/login`, { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailLogin, password: passwordLogin }),
       });
-
       const data = await response.json();
-
       if (response.ok) {
         setUserId(data.usuario?.id);
         setUserName(data.usuario?.nombre || 'Cliente');
-        
         const rolUsuario = Number(data.usuario?.rol);
         if (rolUsuario === 3) setCurrentView('admin');
         else if (rolUsuario === 2) setCurrentView('barbero');
@@ -64,7 +62,7 @@ export default function App() {
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://barberproyect.onrender.com/api/usuarios', {
+      const response = await fetch(`${API_URL}/usuarios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre: regNombre, email: regEmail, password: regPassword, rol_id: 1 })
@@ -78,41 +76,54 @@ export default function App() {
     }
   };
 
-  // Función para consultar las horas ocupadas al backend
+  const iniciarReserva = async () => {
+    setCurrentView('reserva');
+    setReservaStep(1);
+    try {
+      const response = await fetch(`${API_URL}/barberos`);
+      if (response.ok) {
+        const data = await response.json();
+        setBarberos(data);
+      }
+    } catch (error) {
+      console.error("Error al cargar los barberos:", error);
+    }
+  };
+
   const cargarHorasDisponibles = async (fecha) => {
     try {
-      const response = await fetch(`https://barberproyect.onrender.com/api/reservas/ocupadas?fecha=${fecha}`);
+      const response = await fetch(`${API_URL}/reservas/ocupadas?fecha=${fecha}`);
       if (response.ok) {
         const ocupadas = await response.json();
-        setHorasOcupadas(ocupadas); // Ej: ['10:00', '12:30']
+        setHorasOcupadas(ocupadas); 
       }
     } catch (error) {
       console.error("Error al cargar horas", error);
     }
   };
 
-  // Cuando se selecciona un servicio, cargamos las horas y pasamos al paso 2
   const seleccionarServicio = () => {
     cargarHorasDisponibles(fechaSeleccionada);
-    setReservaStep(2);
+    setReservaStep(3);
   };
 
-  // Confirmar la reserva final y enviarla a Neon
   const confirmarReserva = async (hora) => {
     setHoraSeleccionada(hora);
     try {
-      const response = await fetch('https://barberproyect.onrender.com/api/reservas', {
+      const response = await fetch(`${API_URL}/reservas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           cliente_id: userId,
+          barbero_id: barberoSeleccionado, 
+          servicio_id: 1,
           fecha: fechaSeleccionada,
           hora: hora
         })
       });
 
       if (response.ok) {
-        setReservaStep(3); // Mostrar pantalla de éxito
+        setReservaStep(4);
       } else {
         alert("Hubo un problema al guardar la reserva.");
       }
@@ -148,7 +159,7 @@ export default function App() {
         </button>
       </div>
       <div className="options-grid">
-        <div onClick={() => { setReservaStep(1); setCurrentView('reserva'); }} style={{ backgroundColor: CARD_BG, padding: '25px', borderLeft: `3px solid ${GOLD}`, cursor: 'pointer', marginBottom: '15px' }}>
+        <div onClick={iniciarReserva} style={{ backgroundColor: CARD_BG, padding: '25px', borderLeft: `3px solid ${GOLD}`, cursor: 'pointer', marginBottom: '15px' }}>
           <h3 style={{ margin: 0, color: '#fff' }}>Agendar Cita</h3>
         </div>
         <div onClick={() => setCurrentView('ia')} style={{ backgroundColor: CARD_BG, padding: '25px', borderLeft: `3px solid #E5E5E5`, cursor: 'pointer' }}>
@@ -166,7 +177,27 @@ export default function App() {
 
       {reservaStep === 1 && (
         <div>
-          <h3 style={{ color: TEXT_MUTED }}>1. Selecciona Servicio</h3>
+          <h3 style={{ color: TEXT_MUTED, marginBottom: '20px' }}>1. ¿Con quién te cortas?</h3>
+          {barberos.length > 0 ? (
+            barberos.map(barbero => (
+              <button 
+                key={barbero.id} 
+                onClick={() => { setBarberoSeleccionado(barbero.id); setReservaStep(2); }} 
+                style={{ display: 'flex', alignItems: 'center', backgroundColor: CARD_BG, padding: '20px', width: '100%', border: `1px solid ${BORDER}`, color: '#fff', marginBottom: '15px', cursor: 'pointer' }}
+              >
+                <User size={24} style={{ marginRight: '15px', color: GOLD }} />
+                <span style={{ fontSize: '16px' }}>{barbero.nombre}</span>
+              </button>
+            ))
+          ) : (
+            <p style={{ color: TEXT_MUTED }}>Cargando barberos disponibles...</p>
+          )}
+        </div>
+      )}
+
+      {reservaStep === 2 && (
+        <div>
+          <h3 style={{ color: TEXT_MUTED, marginBottom: '20px' }}>2. Selecciona Servicio</h3>
           {['Corte Clásico', 'Corte + Barba'].map(s => (
             <button key={s} onClick={seleccionarServicio} style={{ display: 'block', backgroundColor: CARD_BG, padding: '20px', width: '100%', border: `1px solid ${BORDER}`, color: '#fff', marginBottom: '15px', cursor: 'pointer' }}>
               {s}
@@ -175,27 +206,18 @@ export default function App() {
         </div>
       )}
 
-      {reservaStep === 2 && (
+      {reservaStep === 3 && (
         <div>
-          <h3 style={{ color: TEXT_MUTED }}>2. Horas Disponibles (Hoy)</h3>
+          <h3 style={{ color: TEXT_MUTED, marginBottom: '20px' }}>3. Horas Disponibles (Hoy)</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             {horariosBase.map(hora => {
-              // Verificamos si la hora actual está dentro del arreglo de horasOcupadas
               const isOcupada = horasOcupadas.includes(hora);
-              
               return (
                 <button 
                   key={hora} 
                   disabled={isOcupada}
                   onClick={() => confirmarReserva(hora)} 
-                  style={{ 
-                    backgroundColor: isOcupada ? BG_DARK : CARD_BG, 
-                    color: isOcupada ? '#333' : '#ffffff', 
-                    padding: '18px', 
-                    border: isOcupada ? `1px solid ${BORDER}` : `1px solid ${GOLD}`, 
-                    cursor: isOcupada ? 'not-allowed' : 'pointer',
-                    textDecoration: isOcupada ? 'line-through' : 'none'
-                  }}
+                  style={{ backgroundColor: isOcupada ? BG_DARK : CARD_BG, color: isOcupada ? '#333' : '#ffffff', padding: '18px', border: isOcupada ? `1px solid ${BORDER}` : `1px solid ${GOLD}`, cursor: isOcupada ? 'not-allowed' : 'pointer', textDecoration: isOcupada ? 'line-through' : 'none' }}
                 >
                   {hora}
                 </button>
@@ -205,12 +227,12 @@ export default function App() {
         </div>
       )}
 
-      {reservaStep === 3 && (
+      {reservaStep === 4 && (
         <div style={{ textAlign: 'center', marginTop: '60px' }}>
-          <CheckCircle2 size={50} color={GOLD} />
+          <CheckCircle2 size={50} color={GOLD} style={{ margin: '0 auto 15px auto' }} />
           <h2 style={{ color: '#fff' }}>¡Reserva Confirmada!</h2>
           <p style={{ color: TEXT_MUTED }}>Tu cita quedó registrada a las {horaSeleccionada}.</p>
-          <button onClick={() => setCurrentView('dashboard')} style={{ backgroundColor: CARD_BG, color: '#fff', width: '100%', padding: '16px', marginTop: '20px' }}>VOLVER AL INICIO</button>
+          <button onClick={() => setCurrentView('dashboard')} style={{ backgroundColor: CARD_BG, color: '#fff', width: '100%', padding: '16px', marginTop: '20px', border: 'none', cursor: 'pointer' }}>VOLVER AL INICIO</button>
         </div>
       )}
     </div>
@@ -221,7 +243,6 @@ export default function App() {
       {currentView === 'login' && renderLogin()}
       {currentView === 'registro' && (
          <div style={{ padding: '40px' }}>
-            {/* Formulario de registro (simplificado para espacio) */}
             <h1 style={{color: GOLD}}>REGISTRO</h1>
             <form onSubmit={handleRegisterSubmit}>
               <input type="text" placeholder="Nombre" value={regNombre} onChange={(e) => setRegNombre(e.target.value)} style={{width:'100%', marginBottom:'10px'}}/>
