@@ -4,6 +4,7 @@ import { Scissors, Camera, User, ChevronLeft, CheckCircle2, LogOut } from 'lucid
 import BarberView from './BarberView';
 import AdminView from './AdminView'; 
 import EscanerRostro from './EscanerRostro'; 
+import Registro from './Registro';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('login');
@@ -21,10 +22,6 @@ export default function App() {
   const [barberos, setBarberos] = useState([]);
   const [barberoSeleccionado, setBarberoSeleccionado] = useState(null);
 
-  const [regNombre, setRegNombre] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-
   const GOLD = "#C8A951"; 
   const BG_DARK = "#050505"; 
   const CARD_BG = "#111111"; 
@@ -33,7 +30,7 @@ export default function App() {
 
   const horariosBase = ['10:00', '11:00', '12:30', '15:00', '16:00', '17:30'];
 
-  const API_URL = 'https://barberproyect.onrender.com/api'; // Ajusta si pruebas en local (http://localhost:3000/api)
+  const API_URL = 'https://barberproyect.onrender.com/api'; 
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault(); 
@@ -56,23 +53,6 @@ export default function App() {
       }
     } catch (error) {
       alert("Error: No hay conexión con el backend.");
-    }
-  };
-
-  const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`${API_URL}/usuarios`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: regNombre, email: regEmail, password: regPassword, rol_id: 1 })
-      });
-      if (response.ok) {
-        alert("¡Registro exitoso! Inicia sesión.");
-        setCurrentView('login');
-      }
-    } catch (error) {
-      alert("Error al conectar con el servidor.");
     }
   };
 
@@ -241,17 +221,7 @@ export default function App() {
   return (
     <div className="app-container">
       {currentView === 'login' && renderLogin()}
-      {currentView === 'registro' && (
-         <div style={{ padding: '40px' }}>
-            <h1 style={{color: GOLD}}>REGISTRO</h1>
-            <form onSubmit={handleRegisterSubmit}>
-              <input type="text" placeholder="Nombre" value={regNombre} onChange={(e) => setRegNombre(e.target.value)} style={{width:'100%', marginBottom:'10px'}}/>
-              <input type="email" placeholder="Correo" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} style={{width:'100%', marginBottom:'10px'}}/>
-              <input type="password" placeholder="Contraseña" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} style={{width:'100%', marginBottom:'10px'}}/>
-              <button type="submit">Registrar</button>
-            </form>
-         </div>
-      )}
+      {currentView === 'registro' && <Registro onVolver={() => setCurrentView('login')} />}
       {currentView === 'dashboard' && renderDashboard()}
       {currentView === 'reserva' && renderReserva()}
       {currentView === 'ia' && <EscanerRostro onVolver={() => setCurrentView('dashboard')} />}
