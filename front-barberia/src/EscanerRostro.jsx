@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as faceapi from 'face-api.js';
-import { Camera, ChevronLeft, ScanFace, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react';
+import { ChevronLeft, ScanFace, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react';
 
 export default function EscanerRostro({ onVolver }) {
   const [stream, setStream] = useState(null);
@@ -14,23 +14,18 @@ export default function EscanerRostro({ onVolver }) {
   const BORDER = "#222222";
   const TEXT_MUTED = "#888888";
 
-  // Cargar los modelos de IA desde el repositorio oficial al abrir el componente
   useEffect(() => {
     const cargarModelos = async () => {
       try {
-        // Enlace oficial de GitHub Pages que permite CORS
         const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
-        
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
         ]);
-        
         setModelsLoaded(true);
         iniciarCamara();
       } catch (error) {
-        console.error("Error cargando modelos de IA:", error);
-        alert("Error al cargar la IA. Revisa tu conexión a internet o la consola (F12).");
+        alert("Error al cargar la IA. Revisa tu conexión a internet.");
       }
     };
     cargarModelos();
@@ -46,7 +41,7 @@ export default function EscanerRostro({ onVolver }) {
         videoRef.current.srcObject = mediaStream;
       }
     } catch (error) {
-      alert("No se pudo acceder a la cámara. Revisa los permisos de tu navegador.");
+      alert("No se pudo acceder a la cámara.");
     }
   };
 
@@ -62,58 +57,64 @@ export default function EscanerRostro({ onVolver }) {
     setIsScanning(true);
 
     try {
-      // 1. La IA detecta el rostro y mapea los 68 puntos faciales
       const detection = await faceapi.detectSingleFace(
         videoRef.current, 
         new faceapi.TinyFaceDetectorOptions()
       ).withFaceLandmarks();
 
       if (!detection) {
-        alert("No se detectó ningún rostro. Por favor, mira directamente a la cámara y asegúrate de tener buena luz.");
+        alert("No se detectó ningún rostro. Por favor, mira directamente a la cámara.");
         setIsScanning(false);
         return;
       }
 
-      // 2. Extraer dimensiones matemáticas reales del rostro
-      const landmarks = detection.landmarks;
-      const jawOutline = landmarks.getJawOutline();
+      // Obtenemos los 68 puntos faciales exactos
+      const puntos = detection.landmarks.positions;
       
-      // Cálculo de distancias (ancho de mandíbula vs altura del rostro)
-      const anchoRostro = faceapi.euclideanDistance([jawOutline[0].x, jawOutline[0].y], [jawOutline[16].x, jawOutline[16].y]);
-      const alturaRostro = faceapi.euclideanDistance([landmarks.getNose()[0].x, landmarks.getNose()[0].y], [jawOutline[8].x, jawOutline[8].y]) * 2; 
-      
-      const proporcion = alturaRostro / anchoRostro;
+      // 1. Largo del rostro (desde el entrecejo hasta el mentón)
+      const entrecejoY = (puntos[21].y + puntos[22].y) / 2;
+      const mentonY = puntos[8].y;
+      const largoRostro = mentonY - entrecejoY;
 
-      // 3. Algoritmo de clasificación según geometría real
+      // 2. Ancho de los pómulos (puntos 0 y 16 son los extremos del rostro)
+      const anchoPomulos = puntos[16].x - puntos[0].x;
+
+      // 3. Ancho de la mandíbula (puntos 4 y 12)
+      const anchoMandibula = puntos[12].x - puntos[4].x;
+
+      // Calculamos las proporciones reales
+      const proporcionLargoAncho = largoRostro / anchoPomulos;
+      const proporcionPomuloMandibula = anchoPomulos / anchoMandibula;
+
       let resultado = {};
       
-      if (proporcion > 1.35) {
+      // Lógica matemática mejorada
+      if (proporcionPomuloMandibula > 1.25 && proporcionLargoAncho > 1.05) {
+        resultado = {
+          tipo: 'Diamante',
+          descripcion: 'Tus pómulos son la parte más ancha de tu rostro, con barbilla en punta.',
+          corte: 'French Crop o Flequillo texturizado',
+          tip: 'Deja algo de peso en los lados y flequillo para equilibrar el ancho.'
+        };
+      } else if (proporcionLargoAncho > 1.30) {
         resultado = {
           tipo: 'Ovalado / Alargado',
           descripcion: 'Tu rostro tiene mayor longitud que anchura, con proporciones simétricas.',
           corte: 'Pompadour o Fade Clásico',
-          tip: 'Casi cualquier corte te queda bien. Evita el flequillo muy largo o demasiado volumen arriba para no alargarlo más.'
-        };
-      } else if (proporcion < 1.15) {
-        resultado = {
-          tipo: 'Cuadrado / Redondo',
-          descripcion: 'El ancho y alto de tu rostro son casi iguales.',
-          corte: 'Fade Alto con volumen superior',
-          tip: 'Busca cortes con volumen arriba y muy cortos a los lados (Fade) para dar la ilusión de un rostro más alargado.'
+          tip: 'Casi cualquier corte te queda bien. Evita el flequillo muy largo.'
         };
       } else {
         resultado = {
-          tipo: 'Diamante',
-          descripcion: 'Tus pómulos son la parte más ancha de tu rostro.',
-          corte: 'French Crop o Flequillo texturizado',
-          tip: 'Deja algo de peso en los lados y flequillo para equilibrar el ancho de los pómulos.'
+          tipo: 'Cuadrado / Redondo',
+          descripcion: 'El ancho y alto de tu rostro son muy similares.',
+          corte: 'Fade Alto con volumen superior',
+          tip: 'Busca cortes con volumen arriba y muy cortos a los lados para alargar el rostro visualmente.'
         };
       }
 
       setScanResult(resultado);
       detenerCamara();
     } catch (error) {
-      console.error("Error en el escaneo:", error);
       alert("Hubo un error procesando el rostro.");
     } finally {
       setIsScanning(false);
@@ -146,7 +147,7 @@ export default function EscanerRostro({ onVolver }) {
             {isScanning && (
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                 <ScanFace size={50} color={GOLD} style={{ animation: 'pulse 1.5s infinite' }} />
-                <p style={{ color: GOLD, fontWeight: 'bold', marginTop: '10px' }}>CALCULANDO PROPORCIONES...</p>
+                <p style={{ color: GOLD, fontWeight: 'bold', marginTop: '10px' }}>CALCULANDO...</p>
               </div>
             )}
           </div>
