@@ -35,7 +35,6 @@ export default function EscanerRostro({ onVolver }) {
 
   const iniciarCamara = async () => {
     try {
-      // Ajustado a "video: true" para que acepte la cámara virtual de OBS sin problemas
       const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       setStream(mediaStream);
       if (videoRef.current) {
@@ -71,48 +70,45 @@ export default function EscanerRostro({ onVolver }) {
 
       const puntos = detection.landmarks.positions;
       
-      // 1. Largo del rostro (desde el entrecejo hasta el mentón)
       const entrecejoY = (puntos[21].y + puntos[22].y) / 2;
       const mentonY = puntos[8].y;
       const largoRostro = mentonY - entrecejoY;
 
-      // 2. Ancho de los pómulos (puntos 0 y 16 son los extremos del rostro)
       const anchoPomulos = puntos[16].x - puntos[0].x;
-
-      // 3. Ancho de la mandíbula (puntos 4 y 12)
       const anchoMandibula = puntos[12].x - puntos[4].x;
 
-      // Calculamos las proporciones reales
       const proporcionLargoAncho = largoRostro / anchoPomulos;
       const proporcionPomuloMandibula = anchoPomulos / anchoMandibula;
 
-      // Esto te mostrará las medidas exactas en la consola (F12) para que las revises con OBS
-      console.log("Largo/Ancho:", proporcionLargoAncho.toFixed(2));
-      console.log("Pómulo/Mandíbula:", proporcionPomuloMandibula.toFixed(2));
-
       let resultado = {};
       
-      // Lógica matemática ajustada a la medida desde el entrecejo
-      if (proporcionPomuloMandibula >= 1.20 && proporcionLargoAncho >= 0.90 && proporcionLargoAncho < 1.10){
+      // Umbrales mucho más estrictos para Diamante (1.35)
+      if (proporcionPomuloMandibula >= 1.35 && proporcionLargoAncho >= 0.90 && proporcionLargoAncho < 1.15) {
         resultado = {
           tipo: 'Diamante',
           descripcion: 'Tus pómulos son la parte más ancha de tu rostro, con barbilla en punta.',
           corte: 'French Crop o Flequillo texturizado',
-          tip: 'Deja algo de peso en los lados y flequillo para equilibrar el ancho.'
+          tip: 'Deja algo de peso en los lados y flequillo para equilibrar el ancho.',
+          debugLA: proporcionLargoAncho.toFixed(2),
+          debugPM: proporcionPomuloMandibula.toFixed(2)
         };
-      } else if (proporcionLargoAncho >= 1.10) {
+      } else if (proporcionLargoAncho >= 1.15) {
         resultado = {
           tipo: 'Ovalado / Alargado',
           descripcion: 'Tu rostro tiene mayor longitud que anchura, con proporciones simétricas.',
           corte: 'Pompadour o Fade Clásico',
-          tip: 'Casi cualquier corte te queda bien. Evita el flequillo muy largo.'
+          tip: 'Casi cualquier corte te queda bien. Evita el flequillo muy largo.',
+          debugLA: proporcionLargoAncho.toFixed(2),
+          debugPM: proporcionPomuloMandibula.toFixed(2)
         };
       } else {
         resultado = {
           tipo: 'Cuadrado / Redondo',
           descripcion: 'El ancho y alto de tu rostro son muy similares.',
           corte: 'Fade Alto con volumen superior',
-          tip: 'Busca cortes con volumen arriba y muy cortos a los lados para alargar el rostro visualmente.'
+          tip: 'Busca cortes con volumen arriba y muy cortos a los lados para alargar el rostro visualmente.',
+          debugLA: proporcionLargoAncho.toFixed(2),
+          debugPM: proporcionPomuloMandibula.toFixed(2)
         };
       }
 
@@ -161,21 +157,4 @@ export default function EscanerRostro({ onVolver }) {
         </div>
       ) : (
         <div style={{ animation: 'fadeIn 0.6s ease-out' }}>
-          <div style={{ backgroundColor: CARD_BG, padding: '25px', borderRadius: '8px', border: `1px solid ${GOLD}`, textAlign: 'center', marginBottom: '20px' }}>
-            <CheckCircle2 size={50} color={GOLD} style={{ margin: '0 auto 15px auto' }} />
-            <h3 style={{ color: '#fff', fontSize: '20px', margin: '0 0 5px 0' }}>{scanResult.tipo}</h3>
-            <p style={{ color: TEXT_MUTED, fontSize: '14px', margin: '0 0 20px 0' }}>{scanResult.descripcion}</p>
-            <div style={{ backgroundColor: '#050505', padding: '15px', borderRadius: '6px', border: `1px solid ${BORDER}` }}>
-              <h4 style={{ color: GOLD, margin: '0 0 10px 0', fontSize: '13px', letterSpacing: '1px' }}>CORTE IDEAL:</h4>
-              <p style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0' }}>{scanResult.corte}</p>
-              <p style={{ color: TEXT_MUTED, fontSize: '13px', margin: 0 }}>{scanResult.tip}</p>
-            </div>
-          </div>
-          <button onClick={reiniciarEscaner} style={{ backgroundColor: 'transparent', color: '#fff', width: '100%', padding: '16px', borderRadius: '4px', border: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
-            <RefreshCw size={18} style={{ marginRight: '10px' }} /> Escanear otro rostro
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+          <div style={{ backgroundColor: CARD_BG, padding: '25px', borderRadius: '8px', border:
