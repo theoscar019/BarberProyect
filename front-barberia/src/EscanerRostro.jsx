@@ -93,7 +93,7 @@ export default function EscanerRostro({ onVolver }) {
       let resultado = {};
       
       // Lógica matemática ajustada a la medida desde el entrecejo
-      if (proporcionPomuloMandibula >= 1.15 && proporcionLargoAncho >= 0.90 && proporcionLargoAncho < 1.10) {
+      if (proporcionPomuloMandibula >= 1.20 && proporcionLargoAncho >= 0.90 && proporcionLargoAncho < 1.10){
         resultado = {
           tipo: 'Diamante',
           descripcion: 'Tus pómulos son la parte más ancha de tu rostro, con barbilla en punta.',
