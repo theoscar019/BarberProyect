@@ -35,6 +35,7 @@ export default function EscanerRostro({ onVolver }) {
 
   const iniciarCamara = async () => {
     try {
+      // Ajustado a "video: true" para que acepte la cámara virtual de OBS sin problemas
       const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       setStream(mediaStream);
       if (videoRef.current) {
@@ -68,7 +69,6 @@ export default function EscanerRostro({ onVolver }) {
         return;
       }
 
-      // Obtenemos los 68 puntos faciales exactos
       const puntos = detection.landmarks.positions;
       
       // 1. Largo del rostro (desde el entrecejo hasta el mentón)
@@ -86,17 +86,21 @@ export default function EscanerRostro({ onVolver }) {
       const proporcionLargoAncho = largoRostro / anchoPomulos;
       const proporcionPomuloMandibula = anchoPomulos / anchoMandibula;
 
+      // Esto te mostrará las medidas exactas en la consola (F12) para que las revises con OBS
+      console.log("Largo/Ancho:", proporcionLargoAncho.toFixed(2));
+      console.log("Pómulo/Mandíbula:", proporcionPomuloMandibula.toFixed(2));
+
       let resultado = {};
       
-      // Lógica matemática mejorada
-      if (proporcionPomuloMandibula > 1.25 && proporcionLargoAncho > 1.05) {
+      // Lógica matemática ajustada a la medida desde el entrecejo
+      if (proporcionPomuloMandibula >= 1.15 && proporcionLargoAncho >= 0.90 && proporcionLargoAncho < 1.10) {
         resultado = {
           tipo: 'Diamante',
           descripcion: 'Tus pómulos son la parte más ancha de tu rostro, con barbilla en punta.',
           corte: 'French Crop o Flequillo texturizado',
           tip: 'Deja algo de peso en los lados y flequillo para equilibrar el ancho.'
         };
-      } else if (proporcionLargoAncho > 1.30) {
+      } else if (proporcionLargoAncho >= 1.10) {
         resultado = {
           tipo: 'Ovalado / Alargado',
           descripcion: 'Tu rostro tiene mayor longitud que anchura, con proporciones simétricas.',
