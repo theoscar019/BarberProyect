@@ -157,4 +157,29 @@ export default function EscanerRostro({ onVolver }) {
         </div>
       ) : (
         <div style={{ animation: 'fadeIn 0.6s ease-out' }}>
-          <div style={{ backgroundColor: CARD_BG, padding: '25px', borderRadius: '8px', border:
+          <div style={{ backgroundColor: CARD_BG, padding: '25px', borderRadius: '8px', border: `1px solid ${GOLD}`, textAlign: 'center', marginBottom: '20px' }}>
+            <CheckCircle2 size={50} color={GOLD} style={{ margin: '0 auto 15px auto' }} />
+            <h3 style={{ color: '#fff', fontSize: '20px', margin: '0 0 5px 0' }}>{scanResult.tipo}</h3>
+            <p style={{ color: TEXT_MUTED, fontSize: '14px', margin: '0 0 20px 0' }}>{scanResult.descripcion}</p>
+            <div style={{ backgroundColor: '#050505', padding: '15px', borderRadius: '6px', border: `1px solid ${BORDER}` }}>
+              <h4 style={{ color: GOLD, margin: '0 0 10px 0', fontSize: '13px', letterSpacing: '1px' }}>CORTE IDEAL:</h4>
+              <p style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0' }}>{scanResult.corte}</p>
+              <p style={{ color: TEXT_MUTED, fontSize: '13px', margin: 0 }}>{scanResult.tip}</p>
+              
+              {/* PANEL DE DEBUGGING INYECTADO */}
+              <div style={{ marginTop: '15px', padding: '8px', backgroundColor: '#222', borderRadius: '4px', border: '1px dashed #C8A951' }}>
+                <p style={{ color: '#C8A951', fontSize: '12px', margin: 0, fontFamily: 'monospace' }}>
+                  DEBUG IA - L/A: {scanResult.debugLA} | P/M: {scanResult.debugPM}
+                </p>
+              </div>
+
+            </div>
+          </div>
+          <button onClick={reiniciarEscaner} style={{ backgroundColor: 'transparent', color: '#fff', width: '100%', padding: '16px', borderRadius: '4px', border: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
+            <RefreshCw size={18} style={{ marginRight: '10px' }} /> Escanear otro rostro
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
