@@ -92,7 +92,7 @@ export default function EscanerRostro({ onVolver }) {
           debugLA: proporcionLargoAncho.toFixed(2),
           debugPM: proporcionPomuloMandibula.toFixed(2)
         };
-      } else if (proporcionLargoAncho >= 1.05) {
+      } else if (proporcionLargoAncho >= 0.93) { // Modificado para incluir el L/A de 0.94
         resultado = {
           tipo: 'Ovalado / Alargado',
           descripcion: 'Tu rostro tiene mayor longitud que anchura, con proporciones simétricas.',
@@ -111,7 +111,6 @@ export default function EscanerRostro({ onVolver }) {
           debugPM: proporcionPomuloMandibula.toFixed(2)
         };
       }
-
       setScanResult(resultado);
       detenerCamara();
     } catch (error) {
