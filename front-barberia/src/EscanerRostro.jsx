@@ -14,12 +14,12 @@ export default function EscanerRostro({ onVolver }) {
   const BORDER = "#222222";
   const TEXT_MUTED = "#888888";
 
-  // Cargar los modelos de IA desde un CDN al abrir el componente
+  // Cargar los modelos de IA desde el repositorio oficial al abrir el componente
   useEffect(() => {
     const cargarModelos = async () => {
       try {
-        // Usamos un repositorio público para no tener que descargar los modelos manualmente
-        const MODEL_URL = 'https://cdn.jsdelivr.net/gh/cgarbin/face-api.js-models/models';
+        // Enlace oficial de GitHub Pages que permite CORS
+        const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
         
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
@@ -30,6 +30,7 @@ export default function EscanerRostro({ onVolver }) {
         iniciarCamara();
       } catch (error) {
         console.error("Error cargando modelos de IA:", error);
+        alert("Error al cargar la IA. Revisa tu conexión a internet o la consola (F12).");
       }
     };
     cargarModelos();
@@ -45,7 +46,7 @@ export default function EscanerRostro({ onVolver }) {
         videoRef.current.srcObject = mediaStream;
       }
     } catch (error) {
-      alert("No se pudo acceder a la cámara. Revisa los permisos.");
+      alert("No se pudo acceder a la cámara. Revisa los permisos de tu navegador.");
     }
   };
 
@@ -79,7 +80,7 @@ export default function EscanerRostro({ onVolver }) {
       
       // Cálculo de distancias (ancho de mandíbula vs altura del rostro)
       const anchoRostro = faceapi.euclideanDistance([jawOutline[0].x, jawOutline[0].y], [jawOutline[16].x, jawOutline[16].y]);
-      const alturaRostro = faceapi.euclideanDistance([landmarks.getNose()[0].x, landmarks.getNose()[0].y], [jawOutline[8].x, jawOutline[8].y]) * 2; // Estimación basada en la nariz al mentón
+      const alturaRostro = faceapi.euclideanDistance([landmarks.getNose()[0].x, landmarks.getNose()[0].y], [jawOutline[8].x, jawOutline[8].y]) * 2; 
       
       const proporcion = alturaRostro / anchoRostro;
 
@@ -141,7 +142,7 @@ export default function EscanerRostro({ onVolver }) {
       ) : !scanResult ? (
         <div style={{ textAlign: 'center' }}>
           <div style={{ position: 'relative', width: '100%', height: '350px', backgroundColor: CARD_BG, borderRadius: '8px', overflow: 'hidden', border: `2px solid ${isScanning ? GOLD : BORDER}`, marginBottom: '25px' }}>
-            <video ref={videoRef} autoPlay playsInline muted onPlay={() => {}} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isScanning ? 0.5 : 1, transition: 'opacity 0.3s' }} />
+            <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: isScanning ? 0.5 : 1, transition: 'opacity 0.3s' }} />
             {isScanning && (
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                 <ScanFace size={50} color={GOLD} style={{ animation: 'pulse 1.5s infinite' }} />
