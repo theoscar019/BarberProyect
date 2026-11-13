@@ -10,24 +10,33 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Configuración de correo para recordatorios/confirmaciones
+// ==========================================
+// CONFIGURACIÓN DE CORREO (NODEMAILER)
+// ==========================================
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'tu_correo_barberia@gmail.com', // REEMPLAZA CON TU CORREO
+    user: 'tu_correo_barberia@gmail.com', // REEMPLAZA CON TU CORREO DE GMAIL
     pass: 'tus_16_letras_de_app_password' // REEMPLAZA CON TU CONTRASEÑA DE APLICACIÓN
   }
 });
 
-// Conexión a la base de datos PostgreSQL en Neon
+// ==========================================
+// CONEXIÓN A BASE DE DATOS (NEON)
+// ==========================================
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
 pool.connect()
-  .then(() => console.log('¡Conectado a Neon!'))
+  .then(() => console.log('¡Conectado a la base de datos en Neon exitosamente!'))
   .catch(err => console.error('Error de conexión a la BD:', err.stack));
+
+
+// ==========================================
+// RUTAS DE LA API
+// ==========================================
 
 // 1. LOGIN
 app.post('/api/login', async (req, res) => {
@@ -46,11 +55,12 @@ app.post('/api/login', async (req, res) => {
       res.status(401).json({ message: "Correo o contraseña incorrectos" });
     }
   } catch (error) {
+    console.error("Error en login:", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 });
 
-// 2. REGISTRO
+// 2. REGISTRO DE USUARIOS
 app.post('/api/usuarios', async (req, res) => {
   const { nombre, email, password, rol_id } = req.body;
   try {
@@ -59,22 +69,24 @@ app.post('/api/usuarios', async (req, res) => {
     const result = await pool.query(query, values);
     res.status(201).json({ message: "Usuario registrado", usuario: result.rows[0] });
   } catch (error) {
+    console.error("Error al registrar:", error);
     res.status(500).json({ message: "Error al registrar" });
   }
 });
 
-// 3. OBTENER LISTA DE BARBEROS (rol_id = 2)
+// 3. OBTENER LISTA DE BARBEROS (Usuarios con rol_id = 2)
 app.get('/api/barberos', async (req, res) => {
   try {
     const query = 'SELECT id, nombre FROM usuarios WHERE rol_id = 2';
     const result = await pool.query(query);
     res.status(200).json(result.rows);
   } catch (error) {
+    console.error("Error cargando barberos:", error);
     res.status(500).json({ message: "Error al cargar barberos" });
   }
 });
 
-// 4. OBTENER HORAS OCUPADAS
+// 4. OBTENER HORAS OCUPADAS EN UNA FECHA
 app.get('/api/reservas/ocupadas', async (req, res) => {
   const { fecha } = req.query; 
   try {
@@ -83,11 +95,12 @@ app.get('/api/reservas/ocupadas', async (req, res) => {
     const horasOcupadas = result.rows.map(row => row.hora);
     res.status(200).json(horasOcupadas);
   } catch (error) {
+    console.error("Error consultando horas:", error);
     res.status(500).json({ message: "Error al consultar horas" });
   }
 });
 
-// 5. GUARDAR RESERVA Y ENVIAR CORREO
+// 5. GUARDAR NUEVA RESERVA Y ENVIAR CORREO
 app.post('/api/reservas', async (req, res) => {
   const { cliente_id, barbero_id, servicio_id, fecha, hora } = req.body;
   const fechaHora = `${fecha} ${hora}:00`; 
@@ -99,14 +112,14 @@ app.post('/api/reservas', async (req, res) => {
     `;
     const result = await pool.query(query, [cliente_id, barbero_id, servicio_id || 1, fechaHora]);
 
-    // Enviar correo de confirmación
+    // Buscar datos del cliente para enviar el correo
     const userQuery = 'SELECT nombre, email FROM usuarios WHERE id = $1';
     const userResult = await pool.query(userQuery, [cliente_id]);
 
     if (userResult.rows.length > 0) {
       const cliente = userResult.rows[0];
       const mailOptions = {
-        from: 'tu_correo_barberia@gmail.com', // REEMPLAZA CON TU CORREO
+        from: 'tu_correo_barberia@gmail.com', // REEMPLAZA CON TU CORREO DE GMAIL
         to: cliente.email,
         subject: '💈 Confirmación de tu reserva - Barber Shop',
         html: `
@@ -129,8 +142,51 @@ app.post('/api/reservas', async (req, res) => {
 
     res.status(201).json({ message: "Reserva exitosa", reserva: result.rows[0] });
   } catch (error) {
+    console.error("Error al guardar reserva:", error);
     res.status(500).json({ message: "Error al guardar reserva" });
   }
 });
 
-app.listen(port, () => console.log(`Backend corriendo en el puerto ${port}`));
+// 6. OBTENER LAS CITAS DE UN BARBERO ESPECÍFICO
+app.get('/api/reservas/barbero/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const query = `
+      SELECT r.id, r.fecha_hora, r.estado, u.nombre AS cliente_nombre, r.servicio_id
+      FROM reservas r
+      JOIN usuarios u ON r.cliente_id = u.id
+      WHERE r.barbero_id = $1 AND r.estado = 'Pendiente'
+      ORDER BY r.fecha_hora ASC;
+    `;
+    const result = await pool.query(query, [id]);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error al obtener citas del barbero:", error);
+    res.status(500).json({ message: "Error al cargar citas" });
+  }
+});
+
+// 7. OBTENER TODAS LAS CITAS (Para panel de Admin)
+app.get('/api/admin/citas', async (req, res) => {
+  try {
+    const query = `
+      SELECT r.id, u.nombre AS cliente_nombre, b.nombre AS barbero_nombre, r.fecha_hora, r.servicio_id, r.estado 
+      FROM reservas r
+      JOIN usuarios u ON r.cliente_id = u.id
+      LEFT JOIN usuarios b ON r.barbero_id = b.id
+      ORDER BY r.fecha_hora DESC
+    `;
+    const result = await pool.query(query);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error al obtener todas las citas (Admin):", error);
+    res.status(500).json({ message: "Error al obtener citas" });
+  }
+});
+
+// ==========================================
+// INICIAR SERVIDOR
+// ==========================================
+app.listen(port, () => {
+  console.log(`Servidor Backend corriendo en el puerto ${port}`);
+});
