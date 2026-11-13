@@ -83,7 +83,7 @@ export default function EscanerRostro({ onVolver }) {
       let resultado = {};
       
       // Diamante
-      if (proporcionPomuloMandibula >= 1.25 && proporcionLargoAncho >= 0.84 && proporcionLargoAncho < 0.90) {
+      if (proporcionPomuloMandibula >= 1.23 && proporcionLargoAncho >= 0.84 && proporcionLargoAncho < 0.90) {
         // DIAMANTE: 
         resultado = {
           tipo: 'Diamante',
