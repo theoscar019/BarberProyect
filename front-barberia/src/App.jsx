@@ -255,7 +255,7 @@ export default function App() {
       {currentView === 'dashboard' && renderDashboard()}
       {currentView === 'reserva' && renderReserva()}
       {currentView === 'ia' && <EscanerRostro onVolver={() => setCurrentView('dashboard')} />}
-      {currentView === 'barbero' && <BarberView onLogout={() => setCurrentView('login')} />}
+      {currentView === 'barbero' && <BarberView onLogout={() => setCurrentView('login')} userName={userName} barberoId={userId} />}
       {currentView === 'admin' && <AdminView onLogout={() => setCurrentView('login')} />}
     </div>
   );
