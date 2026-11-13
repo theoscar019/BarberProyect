@@ -82,8 +82,9 @@ export default function EscanerRostro({ onVolver }) {
 
       let resultado = {};
       
-      // Umbrales mucho más estrictos para Diamante
-     if (proporcionPomuloMandibula >= 1.28 && proporcionLargoAncho < 0.90) {
+      // Diamante
+      if (proporcionPomuloMandibula >= 1.25 && proporcionLargoAncho >= 0.84 && proporcionLargoAncho < 0.90) {
+        // DIAMANTE: 
         resultado = {
           tipo: 'Diamante',
           descripcion: 'Tus pómulos son la parte más ancha de tu rostro, con barbilla en punta.',
@@ -92,7 +93,8 @@ export default function EscanerRostro({ onVolver }) {
           debugLA: proporcionLargoAncho.toFixed(2),
           debugPM: proporcionPomuloMandibula.toFixed(2)
         };
-      } else if (proporcionLargoAncho >= 0.93) { // Modificado para incluir el L/A de 0.94
+      } else if (proporcionLargoAncho >= 0.92 && proporcionPomuloMandibula < 1.25) {
+        // OVALADO: 
         resultado = {
           tipo: 'Ovalado / Alargado',
           descripcion: 'Tu rostro tiene mayor longitud que anchura, con proporciones simétricas.',
@@ -102,6 +104,7 @@ export default function EscanerRostro({ onVolver }) {
           debugPM: proporcionPomuloMandibula.toFixed(2)
         };
       } else {
+        // CUADRADO / REDONDO:
         resultado = {
           tipo: 'Cuadrado / Redondo',
           descripcion: 'El ancho y alto de tu rostro son muy similares.',
