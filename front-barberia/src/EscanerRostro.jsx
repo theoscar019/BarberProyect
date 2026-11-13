@@ -83,7 +83,7 @@ export default function EscanerRostro({ onVolver }) {
       let resultado = {};
       
       // Umbrales mucho más estrictos para Diamante (1.35)
-      if (proporcionPomuloMandibula >= 1.35 && proporcionLargoAncho >= 0.90 && proporcionLargoAncho < 1.15) {
+      if (proporcionPomuloMandibula >= 1.20 && proporcionLargoAncho < 0.95) {
         resultado = {
           tipo: 'Diamante',
           descripcion: 'Tus pómulos son la parte más ancha de tu rostro, con barbilla en punta.',
