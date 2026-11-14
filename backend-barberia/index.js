@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
-const mongoose = require('mongoose'); // <-- Agregamos mongoose
+const mongoose = require('mongoose');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -17,7 +17,7 @@ app.use(express.json());
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'barberproyect4@gmail.com', // Tu correo oficial
+    user: 'barberproyect4@gmail.com',
     pass: 'BarberProyect2006.' 
   }
 });
@@ -37,13 +37,10 @@ pool.connect()
 // ==========================================
 // CONEXIÓN A BASE DE DATOS NOSQL (MONGODB)
 // ==========================================
-// NOTA: Reemplaza esta URI por tu enlace real de MongoDB Atlas antes de subir a Render
 const MONGO_URI = 'mongodb+srv://theoscar019_db_user:ofv9MFtCm3Fj6Vy7@cluster0.prjs4rz.mongodb.net/barberia';
 
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log('✅ Conectado a MongoDB (Base de datos NoSQL para IA)'))
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('✅ Conectado a MongoDB (Base de datos NoSQL para IA)'))
   .catch(err => console.error('❌ Error conectando a MongoDB:', err));
 
 // Esquema para guardar los resultados de la IA
@@ -138,14 +135,13 @@ app.post('/api/reservas', async (req, res) => {
     `;
     const result = await pool.query(query, [cliente_id, barbero_id, servicio_id || 1, fechaHora]);
 
-    // Buscar datos del cliente para enviar el correo
     const userQuery = 'SELECT nombre, email FROM usuarios WHERE id = $1';
     const userResult = await pool.query(userQuery, [cliente_id]);
 
     if (userResult.rows.length > 0) {
       const cliente = userResult.rows[0];
       const mailOptions = {
-        from: 'barberproyect4@gmail.com', // El correo que acabas de crear
+        from: 'barberproyect4@gmail.com',
         to: cliente.email,
         subject: '💈 Confirmación de tu reserva - Barber Shop',
         html: `
@@ -234,4 +230,4 @@ app.post('/api/escaneos', async (req, res) => {
 // ==========================================
 app.listen(port, () => {
   console.log(`Servidor Backend corriendo en el puerto ${port}`);
-});  
+});
