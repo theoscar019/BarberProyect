@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'barberproyect4@gmail.com',
-    pass: 'Aabcd efgh ijkl mnop' 
+    pass: 'AQUÍ_VA_TU_CONTRASEÑA_DE_16_CARACTERES' // Acuérdate de pegar tu clave real aquí sin espacios
   }
 });
 
@@ -178,7 +178,7 @@ app.post('/api/reservas', async (req, res) => {
   }
 });
 
-// 6. OBTENER LAS CITAS DE UN BARBERO ESPECÍFICO
+// 6. OBTENER LAS CITAS DE UN BARBERO ESPECÍFICO (Trae las pendientes + las completadas de hoy para la comisión)
 app.get('/api/reservas/barbero/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -186,7 +186,8 @@ app.get('/api/reservas/barbero/:id', async (req, res) => {
       SELECT r.id, r.fecha_hora, r.estado, u.nombre AS cliente_nombre, r.servicio_id
       FROM reservas r
       JOIN usuarios u ON r.cliente_id = u.id
-      WHERE r.barbero_id = $1 AND r.estado = 'Pendiente'
+      WHERE r.barbero_id = $1 
+        AND (r.estado = 'Pendiente' OR (r.estado = 'Completada' AND DATE(r.fecha_hora) = CURRENT_DATE))
       ORDER BY r.fecha_hora ASC;
     `;
     const result = await pool.query(query, [id]);
