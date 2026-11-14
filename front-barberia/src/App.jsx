@@ -224,7 +224,7 @@ export default function App() {
       {currentView === 'registro' && <Registro onVolver={() => setCurrentView('login')} />}
       {currentView === 'dashboard' && renderDashboard()}
       {currentView === 'reserva' && renderReserva()}
-      {currentView === 'ia' && <EscanerRostro onVolver={() => setCurrentView('dashboard')} />}
+      {currentView === 'ia' && <EscanerRostro onVolver={() => setCurrentView('dashboard')} userId={userId} />}
       {currentView === 'barbero' && <BarberView onLogout={() => setCurrentView('login')} userName={userName} barberoId={userId} />}
       {currentView === 'admin' && <AdminView onLogout={() => setCurrentView('login')} />}
     </div>

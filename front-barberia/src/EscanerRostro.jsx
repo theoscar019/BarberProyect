@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import * as faceapi from 'face-api.js';
 import { ChevronLeft, ScanFace, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react';
 
-export default function EscanerRostro({ onVolver }) {
+export default function EscanerRostro({ onVolver, userId }) {
   const [stream, setStream] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
@@ -82,9 +82,8 @@ export default function EscanerRostro({ onVolver }) {
 
       let resultado = {};
       
-      // Diamante
+      // FÓRMULA DE ORO CALIBRADA PARA LA DEMOSTRACIÓN
       if (proporcionPomuloMandibula >= 1.23 && proporcionLargoAncho >= 0.84 && proporcionLargoAncho < 0.90) {
-        // DIAMANTE: 
         resultado = {
           tipo: 'Diamante',
           descripcion: 'Tus pómulos son la parte más ancha de tu rostro, con barbilla en punta.',
@@ -94,7 +93,6 @@ export default function EscanerRostro({ onVolver }) {
           debugPM: proporcionPomuloMandibula.toFixed(2)
         };
       } else if (proporcionLargoAncho >= 0.92 && proporcionPomuloMandibula < 1.25) {
-        // OVALADO: 
         resultado = {
           tipo: 'Ovalado / Alargado',
           descripcion: 'Tu rostro tiene mayor longitud que anchura, con proporciones simétricas.',
@@ -104,7 +102,6 @@ export default function EscanerRostro({ onVolver }) {
           debugPM: proporcionPomuloMandibula.toFixed(2)
         };
       } else {
-        // CUADRADO / REDONDO:
         resultado = {
           tipo: 'Cuadrado / Redondo',
           descripcion: 'El ancho y alto de tu rostro son muy similares.',
@@ -114,7 +111,28 @@ export default function EscanerRostro({ onVolver }) {
           debugPM: proporcionPomuloMandibula.toFixed(2)
         };
       }
+
       setScanResult(resultado);
+
+      // --- AQUÍ SE ENVÍAN LOS DATOS A MONGODB ---
+      if (userId) {
+        fetch('https://barberproyect.onrender.com/api/escaneos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_cliente: userId,
+            analisis_visagismo: {
+              forma_rostro: resultado.tipo,
+              corte_ideal: resultado.corte,
+              tips: resultado.tip,
+              debug_LA: parseFloat(resultado.debugLA),
+              debug_PM: parseFloat(resultado.debugPM)
+            }
+          })
+        }).then(res => console.log("IA: Guardado en MongoDB exitosamente"))
+          .catch(err => console.error("Error guardando en Mongo", err));
+      }
+
       detenerCamara();
     } catch (error) {
       alert("Hubo un error procesando el rostro.");
@@ -168,13 +186,11 @@ export default function EscanerRostro({ onVolver }) {
               <p style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0' }}>{scanResult.corte}</p>
               <p style={{ color: TEXT_MUTED, fontSize: '13px', margin: 0 }}>{scanResult.tip}</p>
               
-              {/* PANEL DE DEBUGGING INYECTADO */}
               <div style={{ marginTop: '15px', padding: '8px', backgroundColor: '#222', borderRadius: '4px', border: '1px dashed #C8A951' }}>
                 <p style={{ color: '#C8A951', fontSize: '12px', margin: 0, fontFamily: 'monospace' }}>
                   DEBUG IA - L/A: {scanResult.debugLA} | P/M: {scanResult.debugPM}
                 </p>
               </div>
-
             </div>
           </div>
           <button onClick={reiniciarEscaner} style={{ backgroundColor: 'transparent', color: '#fff', width: '100%', padding: '16px', borderRadius: '4px', border: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>

@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
+const mongoose = require('mongoose'); // <-- Agregamos mongoose
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -22,7 +23,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // ==========================================
-// CONEXIÓN A BASE DE DATOS (NEON)
+// CONEXIÓN A BASE DE DATOS RELACIONAL (NEON)
 // ==========================================
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -31,8 +32,33 @@ const pool = new Pool({
 
 pool.connect()
   .then(() => console.log('¡Conectado a la base de datos en Neon exitosamente!'))
-  .catch(err => console.error('Error de conexión a la BD:', err.stack));
+  .catch(err => console.error('Error de conexión a la BD Neon:', err.stack));
 
+// ==========================================
+// CONEXIÓN A BASE DE DATOS NOSQL (MONGODB)
+// ==========================================
+// NOTA: Reemplaza esta URI por tu enlace real de MongoDB Atlas antes de subir a Render
+const MONGO_URI = 'mongodb+srv://<USUARIO>:<CONTRASEÑA>@cluster0.XXXXX.mongodb.net/barberia';
+
+mongoose.connect(MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => console.log('✅ Conectado a MongoDB (Base de datos NoSQL para IA)'))
+  .catch(err => console.error('❌ Error conectando a MongoDB:', err));
+
+// Esquema para guardar los resultados de la IA
+const escaneoSchema = new mongoose.Schema({
+  id_cliente: { type: Number, required: true },
+  fecha_escaneo: { type: Date, default: Date.now },
+  analisis_visagismo: {
+    forma_rostro: { type: String, required: true },
+    corte_ideal: { type: String, required: true },
+    tips: { type: String },
+    debug_LA: { type: Number },
+    debug_PM: { type: Number }
+  }
+});
+const Escaneo = mongoose.model('Escaneo', escaneoSchema);
 
 // ==========================================
 // RUTAS DE LA API
@@ -186,6 +212,20 @@ app.get('/api/admin/citas', async (req, res) => {
   } catch (error) {
     console.error("Error al obtener todas las citas (Admin):", error);
     res.status(500).json({ message: "Error al obtener citas" });
+  }
+});
+
+// 8. GUARDAR RESULTADO DE LA IA EN MONGODB (EVALUACIÓN 3)
+app.post('/api/escaneos', async (req, res) => {
+  try {
+    const { id_cliente, analisis_visagismo } = req.body;
+    const nuevoEscaneo = new Escaneo({ id_cliente, analisis_visagismo });
+    await nuevoEscaneo.save();
+    console.log("Nuevo escaneo guardado en Mongo para el cliente:", id_cliente);
+    res.status(201).json({ message: 'Análisis de IA guardado exitosamente en MongoDB' });
+  } catch (error) {
+    console.error("Error al guardar escaneo en MongoDB:", error);
+    res.status(500).json({ error: 'Error al guardar en MongoDB' });
   }
 });
 
