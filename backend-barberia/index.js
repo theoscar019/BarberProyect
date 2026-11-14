@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'barberproyect4@gmail.com',
-    pass: 'abcd efgh ijkl mnop' 
+    pass: 'AQUÍ_VA_TU_CONTRASEÑA_DE_16_CARACTERES' // Reemplaza esto con tu contraseña real de aplicación de Google
   }
 });
 
@@ -222,6 +222,30 @@ app.post('/api/escaneos', async (req, res) => {
   } catch (error) {
     console.error("Error al guardar escaneo en MongoDB:", error);
     res.status(500).json({ error: 'Error al guardar en MongoDB' });
+  }
+});
+
+// 9. ACTUALIZAR ESTADO DE RESERVA (Completar / No asiste)
+app.put('/api/reservas/:id', async (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body; // Recibe 'Completada' o 'No asiste'
+  try {
+    const query = `
+      UPDATE reservas 
+      SET estado = $1 
+      WHERE id = $2 
+      RETURNING *;
+    `;
+    const result = await pool.query(query, [estado, id]);
+    
+    if (result.rows.length > 0) {
+      res.status(200).json({ message: "Reserva actualizada con éxito", reserva: result.rows[0] });
+    } else {
+      res.status(404).json({ message: "Reserva no encontrada" });
+    }
+  } catch (error) {
+    console.error("Error al actualizar la reserva:", error);
+    res.status(500).json({ message: "Error interno al actualizar la reserva" });
   }
 });
 
