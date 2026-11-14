@@ -187,7 +187,10 @@ app.get('/api/reservas/barbero/:id', async (req, res) => {
       FROM reservas r
       JOIN usuarios u ON r.cliente_id = u.id
       WHERE r.barbero_id = $1 
-        AND (r.estado = 'Pendiente' OR (r.estado = 'Completada' AND DATE(r.fecha_hora) = CURRENT_DATE))
+        AND (
+          r.estado = 'Pendiente' 
+          OR (r.estado = 'Completada' AND DATE(r.fecha_hora) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Santiago')::date)
+        )
       ORDER BY r.fecha_hora ASC;
     `;
     const result = await pool.query(query, [id]);
