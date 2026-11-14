@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'barberproyect4@gmail.com',
-    pass: 'AQUÍ_VA_TU_CONTRASEÑA_DE_16_CARACTERES' // Reemplaza esto con tu contraseña real de aplicación de Google
+    pass: 'Aabcd efgh ijkl mnop' 
   }
 });
 
@@ -109,11 +109,15 @@ app.get('/api/barberos', async (req, res) => {
   }
 });
 
-// 4. OBTENER HORAS OCUPADAS EN UNA FECHA
+// 4. OBTENER HORAS OCUPADAS EN UNA FECHA (Libera las horas si el cliente no asiste o cancela)
 app.get('/api/reservas/ocupadas', async (req, res) => {
   const { fecha } = req.query; 
   try {
-    const query = `SELECT TO_CHAR(fecha_hora, 'HH24:MI') as hora FROM reservas WHERE DATE(fecha_hora) = $1`;
+    const query = `
+      SELECT TO_CHAR(fecha_hora, 'HH24:MI') as hora 
+      FROM reservas 
+      WHERE DATE(fecha_hora) = $1 AND estado NOT IN ('No asiste', 'Cancelada')
+    `;
     const result = await pool.query(query, [fecha]);
     const horasOcupadas = result.rows.map(row => row.hora);
     res.status(200).json(horasOcupadas);
