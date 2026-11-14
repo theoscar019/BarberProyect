@@ -38,7 +38,7 @@ pool.connect()
 // CONEXIÓN A BASE DE DATOS NOSQL (MONGODB)
 // ==========================================
 // NOTA: Reemplaza esta URI por tu enlace real de MongoDB Atlas antes de subir a Render
-const MONGO_URI = 'mongodb+srv://<USUARIO>:<CONTRASEÑA>@cluster0.XXXXX.mongodb.net/barberia';
+const MONGO_URI = 'mongodb+srv://theoscar019_db_user:ofv9MFtCm3Fj6Vy7@cluster0.prjs4rz.mongodb.net/barberia';
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
